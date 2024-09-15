@@ -164,8 +164,8 @@ export default function AccessibilityTripPlanner() {
 	}
 
 	return (
-		<div className="md:min-h-screen p-6 md:p-12">
-			<Card className="w-full max-w-2xl mx-auto">
+		<div className="md:min-h-screen p-6 md:p-12 relative">
+			<Card className="w-full max-w-2xl mx-auto bg-white dark:bg-black shadow-lg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
 				<CardHeader>
 					<CardTitle>Accessibility Trip Planner</CardTitle>
 					<CardDescription>Plan your accessible trip with ease</CardDescription>
