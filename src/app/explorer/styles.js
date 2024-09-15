@@ -1,4 +1,51 @@
 // styles/mapStyles.js
+export const ACCESSIBILITY_SUBCATEGORIES = {
+  mobility_accessibility: {
+    slopedramps: "Sloped Ramps",
+    powerassisteddoors: "Power-Assisted Doors",
+    accessiblerestrooms: "Accessible Restrooms",
+    accessibleseatingareas: "Accessible Seating Areas"
+  },
+  cognitive_accessibility: {
+    clearsignage: "Clear Signage",
+    quietspaces: "Quiet Spaces",
+    simplifiedlayout: "Simplified Layout",
+    stafftrainingforcognitivesupport: "Staff Training for Cognitive Support"
+  },
+  hearing_accessibility: {
+    visualalarms: "Visual Alarms",
+    hearingloopsystems: "Hearing Loop Systems",
+    signlanguageinterpretersavailable: "Sign Language Interpreters Available",
+    captioningonmedia: "Captioning on Media"
+  },
+  vision_accessibility: {
+    braillesignage: "Braille Signage",
+    audiodescriptions: "Audio Descriptions",
+    "high-contrastsignage": "High-Contrast Signage",
+    tactileguidancesystems: "Tactile Guidance Systems"
+  },
+  bathroom_accessibility: {
+    "gender-neutraloptions": "Gender-Neutral Options",
+    "family/companioncarerooms": "Family/Companion Care Rooms",
+    adultchangingtables: "Adult Changing Tables",
+    automaticfixtures: "Automatic Fixtures"
+  },
+  lgbtq_inclusivity: {
+    "gender-inclusivepolicies": "Gender-Inclusive Policies",
+    "lgbtq+safespacecertified": "LGBTQ+ Safe Space Certified",
+    "stafftrainingonlgbtq+issues": "Staff Training on LGBTQ+ Issues"
+  },
+  sensory_considerations: {
+    "quiethours/zones": "Quiet Hours/Zones",
+    adjustablelighting: "Adjustable Lighting",
+    "scent-freeareas": "Scent-Free Areas"
+  },
+  overall_inclusivity: {
+    diverserepresentationinimagery: "Diverse Representation in Imagery/Art",
+    inclusivelanguageinsignageandmaterials: "Inclusive Language in Signage and Materials",
+    culturalsensitivitytrainingforstaff: "Cultural Sensitivity Training for Staff"
+  }
+};
 
 export const lightModeStyles = [
     {

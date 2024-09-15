@@ -3,11 +3,11 @@
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useTheme } from 'next-themes';
-import { lightModeStyles, darkModeStyles } from './styles';
-import { ChevronDown } from 'lucide-react'; 
-import markers from '../data/markerData';
+import { lightModeStyles, darkModeStyles, ACCESSIBILITY_SUBCATEGORIES } from './styles';
+import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import styles from './MapPage.module.css';
 import CreateMarkerModal from "../../components/CreateMarkerModal";
+import StarRating from "../../components/StarRating"; 
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDtUZDVbs6sO05Z9NKBj-zA4CnS1mVOKXQ";
 
@@ -27,8 +27,8 @@ export default function MapPage() {
   const [isLoaded, setIsLoaded] = useState(false);
   const { theme, systemTheme } = useTheme();
   const [currentTheme, setCurrentTheme] = useState(theme);
-  const [mapMarkers, setMapMarkers] = useState(markers);
-  const [filteredMarkers, setFilteredMarkers] = useState(markers);
+  const [mapMarkers, setMapMarkers] = useState([]);
+  const [filteredMarkers, setFilteredMarkers] = useState([]);
   const [mapMarkersRef, setMapMarkersRef] = useState([]);
   const [selectedMarker, setSelectedMarker] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -39,6 +39,10 @@ export default function MapPage() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [selectedCategories, setSelectedCategories] = useState([]);
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({});
+  const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
+  const [advancedFilters, setAdvancedFilters] = useState({});
+  const [existingMarkers, setExistingMarkers] = useState([]);
 
 
   useEffect(() => {
@@ -71,7 +75,20 @@ export default function MapPage() {
 
     googleMapRef.current = map;
 
-    updateMarkers(filteredMarkers, map);
+    // Fetch data from API
+    fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/buildings/get-buildings/get')
+      .then(response => response.json())
+      .then(data => {
+        console.log('API Response:', data);
+        setMapMarkers(data);
+        setExistingMarkers(data);
+        console.log("Existing markers: ");
+        console.log(mapMarkers);
+        updateMarkers(data, map);
+      })
+      .catch(error => {
+        console.error('Error fetching data:', error);
+      });
 
     const searchBox = new google.maps.places.SearchBox(inputRef.current);
 
@@ -88,32 +105,6 @@ export default function MapPage() {
           return;
         }
 
-        const lat = place.geometry.location.lat();
-        const lng = place.geometry.location.lng();
-        const placeId = place.place_id;
-
-        const markerExists = mapMarkers.some(
-          (marker) => marker.placeId === placeId
-        );
-
-        if (!markerExists) {
-          const newMarker = {
-            locationName: place.name,
-            lat: lat,
-            lng: lng,
-            address: place.formatted_address,
-            placeId: placeId,
-            wheelchairAccessible: false,
-            friendliness: 0
-          };
-
-          setMapMarkers((prevMarkers) => {
-            const updatedMarkers = [...prevMarkers, newMarker];
-            updateMarkers(updatedMarkers, map);
-            return updatedMarkers;
-          });
-        }
-
         if (place.geometry.viewport) {
           bounds.union(place.geometry.viewport);
         } else {
@@ -122,38 +113,28 @@ export default function MapPage() {
       });
 
       map.fitBounds(bounds);
-      
     });
-    fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/review/get-reviews')
-      .then(response => response.json())
-      .then(data => {
-        console.log('API Response:', data);
-        // You can process the data here if needed
-      })
-      .catch(error => {
-        console.error('Error fetching data:', error);
-      });
-  }, [isLoaded, currentTheme, filteredMarkers]);
+  }, [isLoaded, currentTheme]);
 
   const updateMarkers = (markers, map) => {
     mapMarkersRef.forEach(marker => marker.setMap(null));
-    
+   
     const newMapMarkers = markers.map((markerData) => {
-      const position = new google.maps.LatLng(markerData.lat, markerData.lng);
+      const position = new google.maps.LatLng(markerData.latitude, markerData.longitude);
       const mapMarker = new google.maps.Marker({
         position: position,
         map: map,
-        title: markerData.locationName
+        title: markerData.buildingName
       });
-
+  
       mapMarker.addListener('click', () => {
         setSelectedMarker(markerData);
         setIsModalOpen(true);
       });
-
+  
       return mapMarker;
     });
-
+  
     setMapMarkersRef(newMapMarkers);
   };
 
@@ -162,16 +143,16 @@ export default function MapPage() {
 
     if (nameFilter) {
       result = result.filter(marker => 
-        marker.locationName.toLowerCase().includes(nameFilter.toLowerCase())
+        marker.buildingName.toLowerCase().includes(nameFilter.toLowerCase())
       );
     }
 
     if (wheelchairFilter) {
-      result = result.filter(marker => marker.wheelchairAccessible);
+      result = result.filter(marker => marker.mobility_accessibility_dict.accessiblerestrooms);
     }
 
     if (highFriendlinessFilter) {
-      result = result.filter(marker => marker.friendliness > 4);
+      result = result.filter(marker => marker.overall_inclusivity_rating > 4);
     }
 
     if (selectedCategories.length > 0) {
@@ -180,22 +161,36 @@ export default function MapPage() {
       );
     }
 
+    // Apply advanced filters
+    Object.entries(advancedFilters).forEach(([category, subcategories]) => {
+      Object.entries(subcategories).forEach(([subcategory, isSelected]) => {
+        if (isSelected) {
+          result = result.filter(marker => marker[`${category}_dict`]?.[subcategory]);
+        }
+      });
+    });
+
     result.sort((a, b) => {
       if (sortBy === "name") {
-        return a.locationName.localeCompare(b.locationName);
+        return a.buildingName.localeCompare(b.buildingName);
       } else if (sortBy === "friendliness") {
-        return b.friendliness - a.friendliness;
+        return b.overall_inclusivity_rating - a.overall_inclusivity_rating;
       }
     });
 
     setFilteredMarkers(result);
-  }, [mapMarkers, nameFilter, wheelchairFilter, highFriendlinessFilter, sortBy, selectedCategories]);
+ 
+    // Update map markers when filters change
+    if (googleMapRef.current) {
+      updateMarkers(result, googleMapRef.current);
+    }
+  }, [mapMarkers, nameFilter, wheelchairFilter, highFriendlinessFilter, sortBy, selectedCategories, advancedFilters]);
 
-  const handleTypeChange = (type) => {
-    setSelectedCategories(prevTypes => 
-      prevTypes.includes(type)
-        ? prevTypes.filter(t => t !== type)
-        : [...prevTypes, type]
+  const handleCategoryChange = (category) => {
+    setSelectedCategories(prevCategories => 
+      prevCategories.includes(category)
+        ? prevCategories.filter(c => c !== category)
+        : [...prevCategories, category]
     );
   };
 
@@ -207,11 +202,10 @@ export default function MapPage() {
     setSelectedMarker(marker);
     setIsModalOpen(true);
     
-    const latLng = new google.maps.LatLng(marker.lat, marker.lng);
+    const latLng = new google.maps.LatLng(marker.latitude, marker.longitude);
     googleMapRef.current.panTo(latLng);
     googleMapRef.current.setZoom(15);
   };
-
 
   const handleCreateButtonClick = () => {
     setIsCreateModalOpen(true);
@@ -222,25 +216,36 @@ export default function MapPage() {
   };
 
   const handleCreateMarker = (newMarkerData) => {
-    console.log("Received new marker data:", JSON.stringify(newMarkerData, null, 2));
-    const newMarker = {
-      locationName: newMarkerData.buildingName,
-      lat: newMarkerData.latitude,
-      lng: newMarkerData.longitude,
-      address: newMarkerData.address,
-      placeId: newMarkerData.place_id,
-      wheelchairAccessible: newMarkerData.mobility_accessibility_dict.accessiblerestrooms === "true",
-      friendliness: newMarkerData.overall_inclusivity_rating
-    };
-    setMapMarkers((prevMarkers) => [...prevMarkers, newMarker]);
-    updateMarkers([...mapMarkers, newMarker], googleMapRef.current);
+    setMapMarkers((prevMarkers) => [...prevMarkers, newMarkerData]);
+    updateMarkers([...mapMarkers, newMarkerData], googleMapRef.current);
     setIsCreateModalOpen(false);
+  };
+
+  const toggleSection = (section) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
+  const toggleAdvancedFilter = () => {
+    setIsAdvancedFilterOpen(!isAdvancedFilterOpen);
+  };
+
+  const handleAdvancedFilterChange = (category, subcategory) => {
+    setAdvancedFilters(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [subcategory]: !prev[category]?.[subcategory]
+      }
+    }));
   };
 
   return (
     <>
       <Head>
-        <title>Google Maps Search</title>
+        <title>Accessibility Map</title>
       </Head>
       <div className={`${styles.pageContainer} ${styles[currentTheme]}`}>
         <div className={styles.searchContainer}>
@@ -262,14 +267,14 @@ export default function MapPage() {
               </button>
               {isCategoryDropdownOpen && (
                 <div className={styles.dropdownContent}>
-                  {categories.map(type => (
-                    <label key={type} className={styles.dropdownItem}>
+                  {categories.map(category => (
+                    <label key={category} className={styles.dropdownItem}>
                       <input
                         type="checkbox"
-                        checked={selectedCategories.includes(type)}
-                        onChange={() => handleTypeChange(type)}
+                        checked={selectedCategories.includes(category)}
+                        onChange={() => handleCategoryChange(category)}
                       />
-                      {type.charAt(0).toUpperCase() + type.slice(1)}
+                      {category}
                     </label>
                   ))}
                 </div>
@@ -285,7 +290,13 @@ export default function MapPage() {
               onClick={() => setHighFriendlinessFilter(!highFriendlinessFilter)}
               className={`${styles.filterButton} ${highFriendlinessFilter ? styles.active : ''}`}
             >
-              4+ Star Friendliness
+              High Inclusivity
+            </button>
+            <button
+              onClick={toggleAdvancedFilter}
+              className={`${styles.filterButton} ${isAdvancedFilterOpen ? styles.active : ''} ${styles.advancedFilterButton}`}
+            >
+              <Filter size={18} />
             </button>
           </div>
         </div>
@@ -300,24 +311,23 @@ export default function MapPage() {
                   onChange={(e) => setNameFilter(e.target.value)}
                   className={styles.filterInput}
                 />
+                
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                   className={styles.sortSelect}
                 >
                   <option value="name">Sort by Name</option>
-                  <option value="friendliness">Sort by Friendliness</option>
+                  <option value="friendliness">Sort by Inclusivity</option>
                 </select>
               </div>
             </div>
             <div className={styles.cardContainer}>
             {filteredMarkers.map((marker, index) => (
-              <div key={index} className={styles.card}>
-                <h3 onClick={() => handleCardClick(marker)}>{marker.locationName}</h3>
-                <p>{marker.address}</p>
-                <p>Friendliness: {marker.friendliness}/5</p>
-                <p>Wheelchair Accessible: {marker.wheelchairAccessible ? 'Yes' : 'No'}</p>
-                <span onMouseEnter={() => handleCardClick(marker)} className={styles.hoverEffect}></span>  {/* Optional: Add a hover effect */}
+              <div key={index} className={styles.card} onClick={() => handleCardClick(marker)}>
+                <h3>{marker.buildingName}</h3>
+                <p className={styles.category}>{marker.category}</p>
+                <p className={styles.location}>{marker.address}</p>
               </div>
             ))}
             </div>
@@ -332,14 +342,67 @@ export default function MapPage() {
       {isModalOpen && selectedMarker && (
         <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedMarker.locationName}</h2>
+            <h2>{selectedMarker.buildingName}</h2>
             <p><strong>Address:</strong> {selectedMarker.address}</p>
-            <p><strong>Latitude:</strong> {selectedMarker.lat}</p>
-            <p><strong>Longitude:</strong> {selectedMarker.lng}</p>
-            <p><strong>GID:</strong> {selectedMarker.placeId}</p>
-            <p><strong>Wheelchair Accessible:</strong> {selectedMarker.wheelchairAccessible ? 'Yes' : 'No'}</p>
-            <p><strong>Friendliness:</strong> {selectedMarker.friendliness}/5</p>
-            <button onClick={() => setIsModalOpen(false)}>Close</button>
+            <p><strong>Category:</strong> {selectedMarker.category}</p>
+            
+            <h3>Accessibility Information:</h3>
+            {Object.entries(ACCESSIBILITY_SUBCATEGORIES).map(([key, subcategories]) => (
+              <div key={key} className={styles.accessibilitySection}>
+                <button 
+                  className={styles.sectionToggle}
+                  onClick={() => toggleSection(key)}
+                >
+                  {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                  {openSections[key] ? <ChevronUp /> : <ChevronDown />}
+                </button>
+                {openSections[key] && (
+                  <div className={styles.sectionContent}>
+                    <div className={styles.ratingContainer}>
+                      <strong>Rating:</strong>
+                      <StarRating rating={selectedMarker[`${key}_rating`]} />
+                    </div>
+                    <p>{selectedMarker[`${key}_text_aggregate`]}</p>
+                    <h4>Details:</h4>
+                    <ul>
+                      {Object.entries(subcategories).map(([subKey, subName]) => (
+                        <li key={subKey}>
+                          {subName}: {selectedMarker[`${key}_dict`]?.[subKey] ? 'Yes' : 'No'}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ))}
+            <button onClick={() => setIsModalOpen(false)} className={styles.closeButton}>Close</button>
+          </div>
+        </div>
+      )}
+      {isAdvancedFilterOpen && (
+        <div className={styles.modalOverlay} onClick={toggleAdvancedFilter}>
+          <div className={styles.advancedFilterContent} onClick={(e) => e.stopPropagation()}>
+            <h2>Advanced Filters</h2>
+            <div className={styles.filterGrid}>
+              {Object.entries(ACCESSIBILITY_SUBCATEGORIES).map(([key, subcategories]) => (
+                <div key={key} className={styles.filterSection}>
+                  <h3>{key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}</h3>
+                  <div className={styles.filterItemsGrid}>
+                    {Object.entries(subcategories).map(([subKey, subName]) => (
+                      <label key={subKey} className={styles.filterItem}>
+                        <input
+                          type="checkbox"
+                          checked={advancedFilters[key]?.[subKey] || false}
+                          onChange={() => handleAdvancedFilterChange(key, subKey)}
+                        />
+                        <span>{subName}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <button onClick={toggleAdvancedFilter} className={styles.closeButton}>Close</button>
           </div>
         </div>
       )}
