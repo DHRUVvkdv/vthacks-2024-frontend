@@ -63,7 +63,7 @@ export const Navbar = () => {
 						{/* Settings icon */}
 						<button
 							ref={settingsButtonRef}
-							className="text-gray-600 hover:text-gray-800 focus:outline-none settings-icon"
+							className="settings-icon myseticon"
 							onClick={() => setIsSettingsOpen(!isSettingsOpen)}
 							aria-label="Open settings"
 						>

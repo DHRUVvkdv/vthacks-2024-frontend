@@ -29,7 +29,7 @@
 		--secondary-color: #ee5c26;
 		--background-color: #f8f9fa;
 		--card-background: #ffffff;
-		--text-color: #333333;
+		--text-color: #232323;
 		--border-color: #e0e0e0;
 		--shadow-color: rgba(0, 0, 0, 0.1);
 	}
@@ -54,6 +54,7 @@
 		--border: 240 3.7% 15.9%;
 		--input: 240 3.7% 15.9%;
 		--ring: 10 76.2% 62%;
+		--text-color: #f6f6f6;
 	}
 }
 @layer base {
@@ -323,4 +324,9 @@ input:checked + .slider:before {
 	transform: scale(0, 0);
 	opacity: 0.3;
 	transition: 0s;
+}
+
+.myseticon{
+	color: var(--text-color);
+	font-weight: 100;
 }
