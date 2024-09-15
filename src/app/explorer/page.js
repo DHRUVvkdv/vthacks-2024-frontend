@@ -63,6 +63,7 @@ export default function MapPage() {
   const [advancedFilters, setAdvancedFilters] = useState({});
   const [reviewsVisible, setReviewsVisible] = useState({});
   const [reviews, setReviews] = useState({});
+  const [accessibilityData, setAccessibilityData] = useState({});
 
 
   useEffect(() => {
@@ -100,8 +101,12 @@ export default function MapPage() {
       .then(response => response.json())
       .then(data => {
         setMapMarkers(data);
-        setExistingMarkers(data);
         updateMarkers(data, map);
+        // Fetch accessibility data for each building
+        console.log("now")
+        data.forEach(building => {
+          fetchAccessibilityData(building.GID);
+        });
       })
       .catch(error => {
         console.error('Error fetching data:', error);
@@ -240,8 +245,71 @@ export default function MapPage() {
     setIsCategoryDropdownOpen(!isCategoryDropdownOpen);
   };
 
+  const fetchAccessibilityData = (GID) => {
+    fetch(`https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/aggregations/get-aggregation/${GID}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`Aggregate data for GID ${GID}:`, JSON.stringify(data, null, 2));
+        if (Object.keys(data).length === 0) {
+          throw new Error('No data available');
+        }
+        setAccessibilityData(prevData => ({
+          ...prevData,
+          [GID]: processAccessibilityData(data)
+        }));
+      })
+      .catch(error => {
+        console.error('Error fetching accessibility data:', error);
+        setAccessibilityData(prevData => ({
+          ...prevData,
+          [GID]: createNoDataAvailableObject()
+        }));
+      });
+  };
+  
+  const processAccessibilityData = (data) => {
+    const processedData = {};
+    Object.entries(data).forEach(([key, value]) => {
+      if (key.endsWith('_dict')) {
+        processedData[key] = Object.entries(value).reduce((acc, [subKey, [first, second]]) => {
+          if (second === 0) {
+            acc[subKey] = 'No data available';
+          } else {
+            acc[subKey] = first / second >= 0.5 ? 'Yes' : 'No';
+          }
+          return acc;
+        }, {});
+      } else if (key.endsWith('_rating')) {
+        const [first, second] = value;
+        processedData[key] = second === 0 ? 0 : Math.round(first / second);
+      }
+      // We're not processing text fields as per your request
+    });
+    return processedData;
+  };
+  
+  const createNoDataAvailableObject = () => {
+    const noDataObject = {};
+    Object.keys(ACCESSIBILITY_SUBCATEGORIES).forEach(key => {
+      noDataObject[`${key}_dict`] = Object.keys(ACCESSIBILITY_SUBCATEGORIES[key]).reduce((acc, subKey) => {
+        acc[subKey] = 'No data available';
+        return acc;
+      }, {});
+      noDataObject[`${key}_rating`] = 0;
+    });
+    return noDataObject;
+  };
+
   const handleCardClick = (marker) => {
-    setSelectedMarker(marker);
+    setSelectedMarker({
+      ...marker,
+      accessibilityData: accessibilityData[marker.GID] || {}
+    });
     setIsModalOpen(true);
     
     const latLng = new google.maps.LatLng(marker.latitude, marker.longitude);
@@ -402,18 +470,16 @@ export default function MapPage() {
                   <div className={styles.sectionContent}>
                     <div className={styles.ratingContainer}>
                       <strong>Rating:</strong>
-                      <StarRating rating={selectedMarker[`${key}_rating`]} />
+                      <StarRating rating={selectedMarker.accessibilityData[`${key}_rating`] || 0} />
                     </div>
                     <h4>Details:</h4>
                     <ul>
                       {Object.entries(subcategories).map(([subKey, subName]) => (
                         <li key={subKey}>
-                          {subName}: {selectedMarker[`${key}_dict`]?.[subKey] ? 'Yes' : 'No'}
+                          {subName}: {selectedMarker.accessibilityData[`${key}_dict`]?.[subKey] || 'No data available'}
                         </li>
                       ))}
                     </ul>
-                    <h6>AI-Generated Review:</h6>
-                    <p>{selectedMarker[`${key}_text_aggregate`]}</p>
                     <button 
                       onClick={() => toggleReviews(key)} 
                       className={styles.reviewToggle}
