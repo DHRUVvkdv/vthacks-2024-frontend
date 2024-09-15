@@ -15,6 +15,12 @@ const geistMono = localFont({
 	weight: "100 900",
 });
 
+const openDyslexic = localFont({
+	src: "./fonts/OpenDyslexic-Regular.woff",
+	variable: "--font-dyslexic-off",
+	weight: "100 900",
+});
+
 export const metadata = {
 	title: "Next.js Google Maps",
 	description: "A Next.js application with Google Maps",
@@ -23,7 +29,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+			<body className={`  antialiased`}>
 				<AuthProvider authUrl={process.env.NEXT_PUBLIC_AUTH_URL}>
 					<ThemeProvider
 						attribute="class"

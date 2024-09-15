@@ -1,17 +1,31 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import localFont from "next/font/local";
 
+const openDyslexic = localFont({
+	src: "../app/fonts/OpenDyslexic-Regular.woff",
+	variable: "--font-dyslexic-off",
+	weight: "100 900",
+});
 export default function Settings({ isOpen, onClose, buttonRef }) {
 	const [isLargeText, setIsLargeText] = useState(false);
+	const [isD, setIsD] = useState(false);
 
 	useEffect(() => {
-
 		if (isLargeText) {
 			document.documentElement.classList.add("text-lg");
 		} else {
 			document.documentElement.classList.remove("text-lg");
 		}
 	}, [isLargeText]);
+
+	useEffect(() => {
+		if (!isD) {
+			document.body.classList.remove(openDyslexic.className);
+		} else {
+			document.body.classList.add(openDyslexic.className);
+		}
+	}, [isD]);
 
 	return (
 		<AnimatePresence>
@@ -55,6 +69,19 @@ export default function Settings({ isOpen, onClose, buttonRef }) {
 							</button>
 						</div>
 						<div className="space-y-4">
+							<div className="flex items-center justify-between">
+								<span className="text-sm text-gray-700 dark:text-gray-200">
+									Dyslexic Mode
+								</span>
+								<label className="switch">
+									<input
+										type="checkbox"
+										checked={isD}
+										onChange={() => setIsD(!isD)}
+									/>
+									<span className="slider round"></span>
+								</label>
+							</div>
 							<div className="flex items-center justify-between">
 								<span className="text-sm text-gray-700 dark:text-gray-200">
 									Large Text
