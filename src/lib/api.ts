@@ -1,7 +1,7 @@
 import axios from "axios";
 import { UserProfileFormData } from "./commons";
 
-const API_BASE_URL = "https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/";
+const API_BASE_URL = process.env.NEXT_API_BASE_URL;
 
 export const checkUserOnboarding = async (email: string) => {
 	try {
