@@ -2,6 +2,19 @@ import axios from "axios";
 
 const API_BASE_URL = "https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/";
 
+export interface UserProfileFormData {
+	gender: "string";
+	age: 0;
+	email: "string";
+	user_name: "string";
+	mobility: object;
+	cognitive: object;
+	hearing: object;
+	vision: object;
+	LGBTQ: true;
+	other: object;
+}
+
 export const checkUserOnboarding = async (email: string) => {
 	try {
 		const response = await axios.get(
@@ -37,7 +50,7 @@ export const getProfileByEmail = async (email: string) => {
  * Updates a pre-existing user profile in the database
  * @param formData
  */
-export const updateUserProfile = async (formData: object) => {
+export const updateUserProfile = async (formData: UserProfileFormData) => {
 	try {
 		const dataToSend = { ...formData, age: formData.age ? parseInt(formData.age, 10) : 0 };
 	} catch (error) {
@@ -49,7 +62,7 @@ export const updateUserProfile = async (formData: object) => {
  * Creates a pre-existing user profile in the database
  * @param formData
  */
-export const createUserProfile = async (formData: object) => {
+export const createUserProfile = async (formData: UserProfileFormData) => {
 	console.log(formData);
 	try {
 		const dataToSend = {
