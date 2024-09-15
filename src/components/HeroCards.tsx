@@ -71,7 +71,7 @@ export const HeroCards = () => {
 					<div>
 						<a
 							rel="noreferrer noopener"
-							href="#a"
+							href="#"
 							target="_blank"
 							className={buttonVariants({
 								variant: "ghost",
