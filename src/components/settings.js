@@ -2,30 +2,16 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export default function Settings({ isOpen, onClose, buttonRef }) {
-	const [isDarkMode, setIsDarkMode] = useState(false);
 	const [isLargeText, setIsLargeText] = useState(false);
-	const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
 
 	useEffect(() => {
-		// Apply settings (same as before)
-		if (isDarkMode) {
-			document.documentElement.classList.add("dark");
-		} else {
-			document.documentElement.classList.remove("dark");
-		}
 
 		if (isLargeText) {
 			document.documentElement.classList.add("text-lg");
 		} else {
 			document.documentElement.classList.remove("text-lg");
 		}
-
-		if (isVoiceEnabled) {
-			console.log("Voice dictation enabled");
-		} else {
-			console.log("Voice dictation disabled");
-		}
-	}, [isDarkMode, isLargeText, isVoiceEnabled]);
+	}, [isLargeText]);
 
 	return (
 		<AnimatePresence>
@@ -71,19 +57,6 @@ export default function Settings({ isOpen, onClose, buttonRef }) {
 						<div className="space-y-4">
 							<div className="flex items-center justify-between">
 								<span className="text-sm text-gray-700 dark:text-gray-200">
-									Dark Mode
-								</span>
-								<label className="switch">
-									<input
-										type="checkbox"
-										checked={isDarkMode}
-										onChange={() => setIsDarkMode(!isDarkMode)}
-									/>
-									<span className="slider round"></span>
-								</label>
-							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-sm text-gray-700 dark:text-gray-200">
 									Large Text
 								</span>
 								<label className="switch">
@@ -91,19 +64,6 @@ export default function Settings({ isOpen, onClose, buttonRef }) {
 										type="checkbox"
 										checked={isLargeText}
 										onChange={() => setIsLargeText(!isLargeText)}
-									/>
-									<span className="slider round"></span>
-								</label>
-							</div>
-							<div className="flex items-center justify-between">
-								<span className="text-sm text-gray-700 dark:text-gray-200">
-									Voice Dictation
-								</span>
-								<label className="switch">
-									<input
-										type="checkbox"
-										checked={isVoiceEnabled}
-										onChange={() => setIsVoiceEnabled(!isVoiceEnabled)}
 									/>
 									<span className="slider round"></span>
 								</label>
