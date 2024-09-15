@@ -15,7 +15,7 @@ const App = () => {
 			<Hero />
 			<About />
 			<Features />
-			{/* <Team /> */}
+			<Team />
 			{/* <Newsletter /> */}
 			{/* <Footer /> */}
 			<ScrollToTop />

@@ -12,7 +12,7 @@ export default function ProfilePage() {
 		redirect("/home");
 	}
 
-	const [needsOnboarding, setNeedsOnboarding] = useState(false);
+	const [needsOnboarding, setNeedsOnboarding] = useState(true);
 	const [formData, setFormData] = useState({
 		email: user?.email || "",
 		user_name: "",
