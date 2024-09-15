@@ -17,3 +17,16 @@ export const routeList: RouteProps[] = [
 		label: "MyPlanner",
 	},
 ];
+
+export interface UserProfileFormData {
+	gender: "string";
+	age: 0;
+	email: "string";
+	user_name: "string";
+	mobility: object;
+	cognitive: object;
+	hearing: object;
+	vision: object;
+	LGBTQ: true;
+	other: object;
+}

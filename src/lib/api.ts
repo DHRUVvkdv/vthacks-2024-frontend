@@ -1,19 +1,7 @@
 import axios from "axios";
+import { UserProfileFormData } from "./commons";
 
 const API_BASE_URL = "https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/";
-
-export interface UserProfileFormData {
-	gender: "string";
-	age: 0;
-	email: "string";
-	user_name: "string";
-	mobility: object;
-	cognitive: object;
-	hearing: object;
-	vision: object;
-	LGBTQ: true;
-	other: object;
-}
 
 export const checkUserOnboarding = async (email: string) => {
 	try {
@@ -53,6 +41,12 @@ export const getProfileByEmail = async (email: string) => {
 export const updateUserProfile = async (formData: UserProfileFormData) => {
 	try {
 		const dataToSend = { ...formData, age: formData.age ? parseInt(formData.age, 10) : 0 };
+		const response = await axios.post(
+			`${API_BASE_URL}/api/profile/update-profile`,
+			dataToSend,
+			{ headers: { "Content-Type": "application/json" } }
+		);
+		return response.data;
 	} catch (error) {
 		throw error;
 	}
@@ -80,10 +74,8 @@ export const createUserProfile = async (formData: UserProfileFormData) => {
 			}
 		);
 
-		console.log("Profile saved successfully:", response.data);
 		return response.data;
 	} catch (error) {
-		console.error("Error saving profile:", error);
 		throw error;
 	}
 };
