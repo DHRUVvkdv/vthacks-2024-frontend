@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Globe } from "lucide-react";
+import { MapPin, Users, Globe, Star } from "lucide-react";
 import gpslogo from "@/app/gpslogo.webp";
 
 export const About = () => {
@@ -39,19 +39,19 @@ export const About = () => {
 							</div>
 							<div className="grid grid-cols-3 gap-4 text-center">
 								<div>
-									<MapPin className="h-8 w-8 mb-2 mx-auto text-primary" />
-									<h3 className="font-semibold">200+</h3>
-									<p className="text-sm text-muted-foreground">Locations</p>
-								</div>
-								<div>
-									<Users className="h-8 w-8 mb-2 mx-auto text-primary" />
-									<h3 className="font-semibold">10k+</h3>
-									<p className="text-sm text-muted-foreground">Users</p>
+									<Globe className="h-8 w-8 mb-2 mx-auto text-primary" />
+									<h3 className="font-semibold">100 locations</h3>
+									<p className="text-sm text-muted-foreground">Worldwide</p>
 								</div>
 								<div>
 									<Globe className="h-8 w-8 mb-2 mx-auto text-primary" />
 									<h3 className="font-semibold">10+</h3>
 									<p className="text-sm text-muted-foreground">Acessibilities</p>
+								</div>
+								<div>
+									<Star className="h-8 w-8 mb-2 mx-auto text-primary" />
+									<h3 className="font-semibold">50k+</h3>
+									<p className="text-sm text-muted-foreground">Ratings</p>
 								</div>
 							</div>
 						</div>
