@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 import { useTheme } from 'next-themes';
 import { lightModeStyles, darkModeStyles, ACCESSIBILITY_SUBCATEGORIES } from './styles';
@@ -18,25 +18,6 @@ const categories = [
   "Housing",
   "Restaurant",
   "Other"
-];
-
-const placeholderReviews = [
-  {
-    name: "John Doe",
-    text: "Great accessibility features. The ramps are well-maintained and the staff is very helpful."
-  },
-  {
-    name: "Jane Smith",
-    text: "The automatic doors make entry easy. However, some areas could use better lighting for those with visual impairments."
-  },
-  {
-    name: "Alex Johnson",
-    text: "Excellent accommodations for wheelchair users. The elevators are spacious and always in good working order."
-  },
-  {
-    name: "Sam Brown",
-    text: "The braille signage is very helpful. I'd love to see more tactile maps throughout the building."
-  }
 ];
 
 export default function MapPage() {
@@ -64,7 +45,7 @@ export default function MapPage() {
   const [reviewsVisible, setReviewsVisible] = useState({});
   const [reviews, setReviews] = useState({});
   const [accessibilityData, setAccessibilityData] = useState({});
-
+  const [buildingSummary, setBuildingSummary] = useState(null);
 
   useEffect(() => {
     setCurrentTheme(theme === 'system' ? systemTheme : theme);
@@ -102,8 +83,6 @@ export default function MapPage() {
       .then(data => {
         setMapMarkers(data);
         updateMarkers(data, map);
-        // Fetch accessibility data for each building
-        console.log("now")
         data.forEach(building => {
           fetchAccessibilityData(building.GID);
         });
@@ -288,7 +267,6 @@ export default function MapPage() {
         const [first, second] = value;
         processedData[key] = second === 0 ? 0 : Math.round(first / second);
       }
-      // We're not processing text fields as per your request
     });
     return processedData;
   };
@@ -305,12 +283,31 @@ export default function MapPage() {
     return noDataObject;
   };
 
+  const fetchBuildingSummary = (GID) => {
+    fetch(`https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/aggregations/summarize-building/${GID}`)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log(`Building summary for GID ${GID}:`, data);
+        setBuildingSummary(data.summary);
+      })
+      .catch(error => {
+        console.error('Error fetching building summary:', error);
+        setBuildingSummary(null);
+      });
+  };
+
   const handleCardClick = (marker) => {
     setSelectedMarker({
       ...marker,
       accessibilityData: accessibilityData[marker.GID] || {}
     });
     setIsModalOpen(true);
+    fetchBuildingSummary(marker.GID);
     
     const latLng = new google.maps.LatLng(marker.latitude, marker.longitude);
     googleMapRef.current.panTo(latLng);
@@ -421,7 +418,6 @@ export default function MapPage() {
                   onChange={(e) => setNameFilter(e.target.value)}
                   className={styles.filterInput}
                 />
-                
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -433,13 +429,13 @@ export default function MapPage() {
               </div>
             </div>
             <div className={styles.cardContainer}>
-            {filteredMarkers.map((marker, index) => (
-              <div key={index} className={styles.card} onClick={() => handleCardClick(marker)}>
-                <h3>{marker.buildingName}</h3>
-                <p className={styles.category}>{marker.category}</p>
-                <p className={styles.location}>{marker.address}</p>
-              </div>
-            ))}
+              {filteredMarkers.map((marker, index) => (
+                <div key={index} className={styles.card} onClick={() => handleCardClick(marker)}>
+                  <h3>{marker.buildingName}</h3>
+                  <p className={styles.category}>{marker.category}</p>
+                  <p className={styles.location}>{marker.address}</p>
+                </div>
+              ))}
             </div>
           </div>
           <div className={styles.mapContainer} ref={mapRef}></div>
@@ -457,49 +453,60 @@ export default function MapPage() {
             <p><strong>Category:</strong> {selectedMarker.category}</p>
             
             <h3>Accessibility Information:</h3>
-            {Object.entries(ACCESSIBILITY_SUBCATEGORIES).map(([key, subcategories]) => (
-              <div key={key} className={styles.accessibilitySection}>
-                <button 
-                  className={styles.sectionToggle}
-                  onClick={() => toggleSection(key)}
-                >
-                  {key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                  {openSections[key] ? <ChevronUp /> : <ChevronDown />}
-                </button>
-                {openSections[key] && (
-                  <div className={styles.sectionContent}>
-                    <div className={styles.ratingContainer}>
-                      <strong>Rating:</strong>
-                      <StarRating rating={selectedMarker.accessibilityData[`${key}_rating`] || 0} />
-                    </div>
-                    <h4>Details:</h4>
-                    <ul>
-                      {Object.entries(subcategories).map(([subKey, subName]) => (
-                        <li key={subKey}>
-                          {subName}: {selectedMarker.accessibilityData[`${key}_dict`]?.[subKey] || 'No data available'}
-                        </li>
-                      ))}
-                    </ul>
-                    <button 
-                      onClick={() => toggleReviews(key)} 
-                      className={styles.reviewToggle}
-                    >
-                      {reviewsVisible[key] ? "Hide reviews" : "Show all reviews"}
-                    </button>
-                    {reviewsVisible[key] && (
-                    <div className={styles.allReviews}>
-                      {reviews[selectedMarker.GID]?.map((review, index) => (
-                        <div key={index} className={styles.reviewItem}>
-                          <span className={styles.reviewerName}>{review.user_name}</span>
-                          <p className={styles.reviewText}>{review[`${key}_text`]}</p>
+            {Object.entries(ACCESSIBILITY_SUBCATEGORIES).map(([key, subcategories]) => {
+              const summaryKey = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+              const summary = buildingSummary ? buildingSummary[summaryKey] : null;
+              
+              return (
+                <div key={key} className={styles.accessibilitySection}>
+                  <button 
+                    className={styles.sectionToggle}
+                    onClick={() => toggleSection(key)}
+                  >
+                    {summaryKey}
+                    {openSections[key] ? <ChevronUp /> : <ChevronDown />}
+                  </button>
+                  {openSections[key] && (
+                    <div className={styles.sectionContent}>
+                      <div className={styles.ratingContainer}>
+                        <strong>Rating:</strong>
+                        <StarRating rating={selectedMarker.accessibilityData[`${key}_rating`] || 0} />
+                      </div>
+                      <h4>Details:</h4>
+                      <ul>
+                        {Object.entries(subcategories).map(([subKey, subName]) => (
+                          <li key={subKey}>
+                            {subName}: {selectedMarker.accessibilityData[`${key}_dict`]?.[subKey] || 'No data available'}
+                          </li>
+                        ))}
+                      </ul>
+                      {summary && (
+                        <div className={styles.aiReviewSection}>
+                          <h4>AI-Generated Review:</h4>
+                          <p>{summary}</p>
                         </div>
-                      ))}
+                      )}
+                      <button 
+                        onClick={() => toggleReviews(key)} 
+                        className={styles.reviewToggle}
+                      >
+                        {reviewsVisible[key] ? "Hide reviews" : "Show all reviews"}
+                      </button>
+                      {reviewsVisible[key] && (
+                        <div className={styles.allReviews}>
+                          {reviews[selectedMarker.GID]?.filter(review => review[`${key}_text`].trim() !== '').map((review, index) => (
+                            <div key={index} className={styles.reviewItem}>
+                              <span className={styles.reviewerName}>{review.user_name}</span>
+                              <p className={styles.reviewText}>{review[`${key}_text`]}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
-                  </div>
-                )}
-              </div>
-            ))}
+                </div>
+              );
+            })}
             <button onClick={() => setIsModalOpen(false)} className={styles.closeButton}>Close</button>
           </div>
         </div>
