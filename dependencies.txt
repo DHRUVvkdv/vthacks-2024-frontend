@@ -1,0 +1,7 @@
+next
+react
+react-dom
+tailwindcss
+postcss
+autoprefixer
+react-icons

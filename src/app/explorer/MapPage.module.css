@@ -1,0 +1,340 @@
+/* :root {
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --background-color: #f8f9fa;
+  --card-background: #ffffff;
+  --text-color: #333333;
+  --border-color: #e0e0e0;
+  --shadow-color: rgba(0, 0, 0, 0.1);
+} */
+
+.dark {
+  --primary-color: #ee5c26;
+  --secondary-color: #ee5c26;
+  --background-color: #1a1a1a;
+  --card-background: #2a2a2a;
+  --text-color: #f0f0f0;
+  --border-color: #444444;
+  --shadow-color: rgba(255, 255, 255, 0.1);
+}
+
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.searchContainer {
+  padding: 20px;
+  background-color: var(--card-background);
+  box-shadow: 0 2px 4px var(--shadow-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.searchInput {
+  width: 60%;
+  padding: 12px;
+  font-size: 16px;
+  border: 1px solid var(--border-color);
+  border-radius: 50px;
+  padding-left: 20px;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+  margin-bottom: 10px;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.contentContainer {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.leftPanel {
+  width: 50%;
+  padding: 20px;
+  overflow-y: auto;
+  background-color: var(--background-color);
+}
+
+.categoryDropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.categoryButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  min-width: 120px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.dropdownIcon {
+  margin-left: 8px;
+}
+
+.dropdownContent {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: #ffffff;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  border-radius: 4px;
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.dropdownItem {
+  color: black;
+  padding: 10px 12px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: #f1f1f1;
+}
+
+.dropdownItem input {
+  margin-right: 8px;
+}
+
+.filterContainer {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.filterSortWrapper {
+  display: flex;
+  width: 100%;
+  max-width: 600px;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.filterInput {
+  flex: 10; /* This sets the flex-grow to 3, giving it 75% of the available space */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.sortSelect {
+  flex: 1; /* This sets the flex-grow to 1, giving it 25% of the available space */
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 24px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+  transition: all 0.3s ease;
+}
+
+.filterInput:focus,
+.sortSelect:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+
+.sortSelect:focus {
+  cursor: pointer;
+}
+
+
+.filterButtons {
+  display: flex;
+  gap: 10px;
+  border-radius: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 800px;
+}
+
+.filterButton {
+  padding: 8px 12px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.filterButton:hover {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+
+.filterButton.active {
+  background-color: var(--primary-color);
+  color: #ffffff;
+}
+
+.cardContainer {
+  display: grid;
+  gap: 15px;
+}
+
+.card {
+  background-color: var(--card-background);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px var(--shadow-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 8px var(--shadow-color);
+}
+
+.card h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+  font-size: 1.2rem;
+}
+
+.card p {
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+.mapContainer {
+  width: 60%;
+  height: 100%;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modalContent {
+  background-color: var(--card-background);
+  color: var(--text-color);
+  padding: 25px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 4px 6px var(--shadow-color);
+}
+
+.modalContent h2 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+.modalContent button {
+  margin-top: 20px;
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modalContent button:hover {
+  background-color: #2980b9;
+}
+
+.createButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.createButton button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+  color: #ffffff;
+  font-size: 40px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px var(--shadow-color);
+}
+
+.createButton button:hover {
+  background-color: #ef561e;
+  transform: scale(1.1);
+}
+
+.createText {
+  opacity: 0;
+  margin-right: 10px;
+  background-color: var(--card-background);
+  color: var(--text-color);
+  padding: 5px 10px;
+  border-radius: 4px;
+  transition: opacity 0.3s ease;
+}
+
+.createButton:hover .createText {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .contentContainer {
+    flex-direction: column;
+  }
+
+  .leftPanel,
+  .mapContainer {
+    width: 100%;
+  }
+
+  .leftPanel {
+    max-height: 50vh;
+    overflow-y: auto;
+  }
+
+  .mapContainer {
+    height: 50vh;
+  }
+}
