@@ -14,21 +14,12 @@ import {
 } from "@/components/ui/card";
 import { useUser, useRedirectFunctions } from "@propelauth/nextjs/client";
 import { Mic, Ear, EarOff, AlertCircle } from "lucide-react";
+import { giveGPTPromptToBackend } from "@/lib/api";
 
 interface Message {
 	role: "user" | "bot";
 	content: string;
 }
-
-const sendMessageToServer = async (message: string) => {
-	// Simulate API call
-	await new Promise((resolve) => setTimeout(resolve, 1000));
-	return `Here's your accessible plan for the day based on your request: "${message}"
-1. Start with a visit to the fully wheelchair-accessible Art Museum at 10 AM.
-2. Enjoy lunch at the nearby Inclusive Cafe, which offers menus in Braille and large print.
-3. In the afternoon, attend an ASL-interpreted tour of the Botanical Gardens.
-4. End your day with a relaxing session at the Sensory-Friendly Park.`;
-};
 
 export default function AccessibilityTripPlanner() {
 	const { user } = useUser();
@@ -38,6 +29,7 @@ export default function AccessibilityTripPlanner() {
 	const [canSubmit, setCanSubmit] = useState<boolean>(true);
 	const [generated, setGenerated] = useState<boolean>(false);
 	const [isListening, setIsListening] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const speakPlan = (text: string) => {
 		const utterance = new SpeechSynthesisUtterance(text);
@@ -97,6 +89,7 @@ export default function AccessibilityTripPlanner() {
 
 		setCanSubmit(false);
 		setGenerated(true);
+		setIsLoading(true);
 
 		// Clear previous messages if this is a new generation
 		if (!generated) {
@@ -108,8 +101,15 @@ export default function AccessibilityTripPlanner() {
 		setQuery(""); // Clear input field
 
 		try {
-			const response = await sendMessageToServer(currentQuery);
-			animateText(response);
+			if (user) {
+				const response = await giveGPTPromptToBackend(user.email, currentQuery);
+				setIsLoading(false);
+				if (response && response.detailed_summary) {
+					animateText(response.detailed_summary);
+				} else {
+					animateText("Sorry, the response format was unexpected.");
+				}
+			}
 		} catch (error) {
 			console.error("Error:", error);
 			setMessages((prev) => [...prev, { role: "bot", content: "Sorry, an error occurred." }]);
@@ -164,8 +164,8 @@ export default function AccessibilityTripPlanner() {
 	}
 
 	return (
-		<div className="md:min-h-screen p-6 md:p-12 relative">
-			<Card className="w-full max-w-2xl mx-auto bg-white dark:bg-black shadow-lg absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+		<div className="min-h-screen p-4 md:p-8 flex items-center justify-center">
+			<Card className="w-full max-w-2xl mx-auto bg-white dark:bg-black shadow-lg ">
 				<CardHeader>
 					<CardTitle>Accessibility Trip Planner</CardTitle>
 					<CardDescription>Plan your accessible trip with ease</CardDescription>
@@ -197,11 +197,23 @@ export default function AccessibilityTripPlanner() {
 									</Button>
 								</div>
 							</div>
-							<Button type="submit" disabled={!canSubmit || query.trim() === ""}>
-								{generated ? "Displaying Plan" : "Generate Plan"}
+							<Button
+								type="submit"
+								disabled={!canSubmit || query.trim() === "" || isLoading}
+							>
+								{isLoading
+									? "Loading..."
+									: generated
+									? "Displaying Plan"
+									: "Generate Plan"}
 							</Button>
 						</div>
 					</form>
+					{isLoading && (
+						<p className="mt-4 text-center font-semibold text-appAccentColor">
+							Loading your plan...
+						</p>
+					)}
 					<div className="mt-6 space-y-4">
 						{messages.map((message, index) => (
 							<div key={index}>

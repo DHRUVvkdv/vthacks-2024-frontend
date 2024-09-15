@@ -79,3 +79,21 @@ export const createUserProfile = async (formData: UserProfileFormData) => {
 		throw error;
 	}
 };
+export const giveGPTPromptToBackend = async (email: string, prompt: string) => {
+	console.log(email, prompt);
+	try {
+		const response = await axios.post(
+			`${API_BASE_URL}/api/plan/comprehensive-plan/${encodeURIComponent(email)}`,
+			null, // empty body
+			{
+				params: {
+					user_input: prompt,
+				},
+			}
+		);
+		return response.data;
+	} catch (err) {
+		console.error("Error in giveGPTPromptToBackend:", err);
+		throw err;
+	}
+};
