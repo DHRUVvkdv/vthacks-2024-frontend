@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useUser } from "@propelauth/nextjs/client";
-import { checkUserOnboarding, saveUserProfile } from "@/lib/api";
+import { createUserProfile, getProfileByEmail, updateUserProfile } from "@/lib/api";
 import { redirect } from "next/navigation";
 
 export default function ProfilePage() {
@@ -54,23 +54,27 @@ export default function ProfilePage() {
 	const [isLoading, setIsLoading] = useState(false);
 
 	useEffect(() => {
-		const checkOnboarding = async () => {
+		const getProfileByEmailFromServer = async () => {
 			if (user) {
 				try {
-					const result = await checkUserOnboarding(user.email);
+					const result = await getProfileByEmail(user.email);
 					if (result == null) {
+						// user needs to be saved
 						setNeedsOnboarding(false);
 					}
 					if (result.exists) {
+						// user exists and needs to have data
 						setFormData((prevData) => ({ ...prevData, ...result.data }));
 						setNeedsOnboarding(false);
 					} else {
 						setNeedsOnboarding(true);
 					}
-				} catch (error) {}
+				} catch (error) {
+					throw Error;
+				}
 			}
 		};
-		checkOnboarding();
+		getProfileByEmailFromServer();
 	}, [user]);
 
 	const handleInputChange = (e) => {
@@ -103,11 +107,16 @@ export default function ProfilePage() {
 		e.preventDefault();
 		setIsLoading(true);
 		try {
-			await saveUserProfile(formData);
+			if (needsOnboarding) {
+				await createUserProfile(formData);
+			} else {
+				await updateUserProfile(formData);
+			}
+
 			setSubmitted(true);
 			setNeedsOnboarding(false);
 		} catch (error) {
-			console.error("Error saving profile:", error);
+			throw Error;
 		} finally {
 			setIsLoading(false);
 		}
