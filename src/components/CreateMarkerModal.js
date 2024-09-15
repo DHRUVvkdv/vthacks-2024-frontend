@@ -350,7 +350,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                 // If the building doesn't exist, create it first
                 const buildingData = formatDataForBuildingCreation();
                 console.log("Creating new building:", JSON.stringify(buildingData, null, 2));
-
+    
                 const buildingResponse = await fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/buildings/create-building', {
                     method: 'POST',
                     headers: {
@@ -358,15 +358,15 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                     },
                     body: JSON.stringify(buildingData),
                 });
-
+    
                 if (!buildingResponse.ok) {
                     throw new Error('Failed to create building');
                 }
-
+    
                 const buildingResult = await buildingResponse.json();
                 console.log('Building created successfully:', buildingResult);
             }
-
+    
             // Now create the review
             const reviewResponse = await fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/review/create-review', {
                 method: 'POST',
@@ -375,13 +375,28 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                 },
                 body: JSON.stringify(formattedReviewData),
             });
-
+    
             if (!reviewResponse.ok) {
                 throw new Error('Failed to create review');
             }
-
+    
             const reviewResult = await reviewResponse.json();
             console.log('Review created successfully:', reviewResult);
+    
+            // Update aggregation
+            const updateAggregationResponse = await fetch(`https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/aggregations/update-aggregation/${formattedReviewData.GID}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+    
+            if (!updateAggregationResponse.ok) {
+                throw new Error('Failed to update aggregation');
+            }
+    
+            console.log('Aggregation updated successfully');
+    
             setSubmitSuccess(true);
             onSubmit(formattedReviewData);
             setTimeout(() => {
