@@ -143,7 +143,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                 }));
 
                 // Check if the place already exists in existingMarkers
-                const exists = existingMarkers.some(marker => marker.placeId === place.GID);
+                const exists = existingMarkers.some(marker => marker.GID === place.place_id);
                 setPlaceExists(exists);
             });
 
@@ -235,7 +235,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
 
         return {
             buildingName: markerData.locationName,
-            category: "other",
+            category: "Other",
             GID: markerData.place_id,
             address: markerData.address,
             latitude: parseFloat(markerData.lat),

@@ -30,13 +30,14 @@ export const Navbar = () => {
 		<header className="sticky border-b-[1px] top-0 z-40 w-full bg-white dark:border-b-slate-700 dark:bg-background">
 			<NavigationMenu className="mx-auto">
 				<NavigationMenuList className="container h-14 px-4 w-screen flex justify-between items-center">
-					<NavigationMenuItem className="font-bold flex">
+				<NavigationMenuItem className="font-bold flex">
 						<Link
 							rel="noreferrer noopener"
 							href={routeList[0].href}
-							className="ml-2 text-xl flex"
+							className="ml-2 text-3xl flex font-['Open_Sans'] font-extrabold"
 						>
-							Mapability
+							<span>map</span>
+							<span className="text-[#ee5c26]">ability</span>
 						</Link>
 					</NavigationMenuItem>
 

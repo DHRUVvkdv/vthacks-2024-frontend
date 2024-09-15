@@ -12,7 +12,7 @@ export const Hero = () => {
 				<div className="text-5xl md:text-6xl font-bold">
 					<h1 className="inline">
 						<span className="inline bg-gradient-to-r from-[#E97451]  to-[#d25c47] text-transparent bg-clip-text ">
-							Your Gateway to the World’s Top Destinations
+							Accessibility Mapped, Adventures Unlocked
 						</span>
 					</h1>{" "}
 					{/* <h2 className="inline">
