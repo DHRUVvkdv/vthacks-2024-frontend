@@ -3,18 +3,27 @@ import { buttonVariants } from "./ui/button";
 import { HeroCards } from "./HeroCards";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useRedirectFunctions } from "@propelauth/nextjs/client";
+import { redirect } from "next/navigation";
+import { useUser } from "@propelauth/nextjs/client";
+import Link from "next/link";
 
 export const Hero = () => {
 	const { redirectToSignupPage } = useRedirectFunctions();
+	const { user } = useUser();
+
+	const handleExplore = () => {
+		redirect("/explorer");
+	};
 	return (
 		<section className="container grid lg:grid-cols-2 place-items-center py-20 md:py-32 gap-10">
-			<div className="text-center lg:text-start items-center text-center space-y-6">
+			<div className=" lg:text-start items-center text-center space-y-6">
 				<div className="text-5xl md:text-6xl font-bold">
-				<h1 className="inline text-50xl">
-				<span className="inline font-['Open_Sans'] bg-clip-text">
-					<span>map</span><span className="text-[#E97451]">ability</span>
-				</span>
-				</h1>
+					<h1 className="inline text-50xl">
+						<span className="inline font-['Open_Sans'] bg-clip-text">
+							<span>map</span>
+							<span className="text-[#E97451]">ability</span>
+						</span>
+					</h1>
 					{/* <h2 className="inline">
             <span className="inline bg-gradient-to-r from-[#61DAFB] via-[#1fc0f1] to-[#03a3d7] text-transparent bg-clip-text">
               APP NAME
@@ -27,12 +36,27 @@ export const Hero = () => {
 				</p>
 
 				<div className="space-y-4 md:space-y-0 md:space-x-4">
-					<Button
-						className="w-full md:w-1/3"
-						onClick={(e) => redirectToSignupPage()}
-					>
-						Begin
-					</Button>
+					{user ? (
+						<>
+							<Button className="w-full md:w-1/3 font-bold">
+								<Link
+									href={"/explorer"}
+									className="block w-full h-full dark:text-white"
+								>
+									Explore
+								</Link>
+							</Button>
+						</>
+					) : (
+						<>
+							<Button
+								className="w-full md:w-1/3 font-bold"
+								onClick={(e) => redirectToSignupPage()}
+							>
+								Begin
+							</Button>
+						</>
+					)}
 
 					<a
 						rel="noreferrer noopener"
