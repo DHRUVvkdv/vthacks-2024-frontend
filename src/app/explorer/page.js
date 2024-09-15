@@ -20,6 +20,25 @@ const categories = [
   "Other"
 ];
 
+const placeholderReviews = [
+  {
+    name: "John Doe",
+    text: "Great accessibility features. The ramps are well-maintained and the staff is very helpful."
+  },
+  {
+    name: "Jane Smith",
+    text: "The automatic doors make entry easy. However, some areas could use better lighting for those with visual impairments."
+  },
+  {
+    name: "Alex Johnson",
+    text: "Excellent accommodations for wheelchair users. The elevators are spacious and always in good working order."
+  },
+  {
+    name: "Sam Brown",
+    text: "The braille signage is very helpful. I'd love to see more tactile maps throughout the building."
+  }
+];
+
 export default function MapPage() {
   const mapRef = useRef(null);
   const googleMapRef = useRef(null);
@@ -42,7 +61,8 @@ export default function MapPage() {
   const [openSections, setOpenSections] = useState({});
   const [isAdvancedFilterOpen, setIsAdvancedFilterOpen] = useState(false);
   const [advancedFilters, setAdvancedFilters] = useState({});
-  const [existingMarkers, setExistingMarkers] = useState([]);
+  const [reviewsVisible, setReviewsVisible] = useState({});
+  const [reviews, setReviews] = useState({});
 
 
   useEffect(() => {
@@ -79,15 +99,30 @@ export default function MapPage() {
     fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/buildings/get-buildings/get')
       .then(response => response.json())
       .then(data => {
-        console.log('API Response:', data);
         setMapMarkers(data);
         setExistingMarkers(data);
-        console.log("Existing markers: ");
-        console.log(mapMarkers);
         updateMarkers(data, map);
       })
       .catch(error => {
         console.error('Error fetching data:', error);
+      });
+
+    // Fetch reviews data
+    fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/review/get-reviews')
+      .then(response => response.json())
+      .then(data => {
+        console.log('Reviews API Response:', data);
+        const reviewsByGID = data.reduce((acc, review) => {
+          if (!acc[review.GID]) {
+            acc[review.GID] = [];
+          }
+          acc[review.GID].push(review);
+          return acc;
+        }, {});
+        setReviews(reviewsByGID);
+      })
+      .catch(error => {
+        console.error('Error fetching reviews data:', error);
       });
 
     const searchBox = new google.maps.places.SearchBox(inputRef.current);
@@ -115,6 +150,13 @@ export default function MapPage() {
       map.fitBounds(bounds);
     });
   }, [isLoaded, currentTheme]);
+
+  const toggleReviews = (key) => {
+    setReviewsVisible(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
 
   const updateMarkers = (markers, map) => {
     mapMarkersRef.forEach(marker => marker.setMap(null));
@@ -342,7 +384,7 @@ export default function MapPage() {
       {isModalOpen && selectedMarker && (
         <div className={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedMarker.buildingName}</h2>
+            <h2 className={styles.modalHeading}>{selectedMarker.buildingName}</h2>
             <p><strong>Address:</strong> {selectedMarker.address}</p>
             <p><strong>Category:</strong> {selectedMarker.category}</p>
             
@@ -362,7 +404,6 @@ export default function MapPage() {
                       <strong>Rating:</strong>
                       <StarRating rating={selectedMarker[`${key}_rating`]} />
                     </div>
-                    <p>{selectedMarker[`${key}_text_aggregate`]}</p>
                     <h4>Details:</h4>
                     <ul>
                       {Object.entries(subcategories).map(([subKey, subName]) => (
@@ -371,6 +412,24 @@ export default function MapPage() {
                         </li>
                       ))}
                     </ul>
+                    <h6>AI-Generated Review:</h6>
+                    <p>{selectedMarker[`${key}_text_aggregate`]}</p>
+                    <button 
+                      onClick={() => toggleReviews(key)} 
+                      className={styles.reviewToggle}
+                    >
+                      {reviewsVisible[key] ? "Hide reviews" : "Show all reviews"}
+                    </button>
+                    {reviewsVisible[key] && (
+                    <div className={styles.allReviews}>
+                      {reviews[selectedMarker.GID]?.map((review, index) => (
+                        <div key={index} className={styles.reviewItem}>
+                          <span className={styles.reviewerName}>{review.user_name}</span>
+                          <p className={styles.reviewText}>{review[`${key}_text`]}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                   </div>
                 )}
               </div>

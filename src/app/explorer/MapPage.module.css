@@ -328,6 +328,11 @@
   box-shadow: 0 4px 6px var(--shadow-color);
 }
 
+.modalHeading{
+  font-size: 25px;
+  font-weight: bold;
+}
+
 .modalContent h2 {
   margin-top: 0;
   color: var(--primary-color);
@@ -371,8 +376,15 @@
 }
 
 .sectionContent h4 {
-  margin-top: 15px;
-  margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 1px;
+  color: var(--text-color);
+  font-weight: bold;
+}
+
+.sectionContent h6 {
+  margin-top: 5px;
+  margin-bottom: 1px;
   color: var(--text-color);
   font-weight: bold;
 }
@@ -381,15 +393,62 @@
   list-style-type: none;
   padding-left: 0;
   font-size: 0.95rem;
+  margin-bottom: 10px;
 }
 
 .sectionContent p {
   font-weight: lighter;
   font-size: 0.95rem;
+  font-style: italic;
 }
 
 .sectionContent li {
-  margin-bottom: 1px;
+  margin-bottom: 0px;
+}
+
+.reviewToggle {
+  color: #ee5c26;
+  text-decoration: underline;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+  font-size: 0.95rem;
+  font-style: italic;
+}
+
+.allReviews {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #ccc;
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #f9f9f9;
+}
+
+.reviewItem {
+  margin-bottom: 15px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.reviewItem:last-child {
+  border-bottom: none;
+}
+
+.reviewerName {
+  font-weight: bold;
+}
+
+.reviewDate {
+  color: #888;
+  font-size: 0.9em;
+}
+
+.reviewText {
+  margin-top: 5px;
 }
 
 .closeButton {

@@ -11,9 +11,9 @@ const StarRating = ({ rating }) => {
           key={index}
           className={`text-lg ${
             index < fullStars
-              ? 'text-orange-400'
+              ? 'text-orange-500'
               : index === fullStars && hasHalfStar
-              ? 'text-orange-400'
+              ? 'text-orange-500'
               : 'text-gray-300'
           }`}
         >

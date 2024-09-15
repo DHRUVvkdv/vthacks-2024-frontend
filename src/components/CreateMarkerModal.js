@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { useUser, useRedirectFunctions, useLogoutFunction } from "@propelauth/nextjs/client";
 
 const accessibilitySections = [
     {
@@ -93,6 +94,29 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
         };
         return acc;
     }, {});
+
+    const { user } = useUser();
+    const [userProfile, setUserProfile] = useState(null);
+
+    useEffect(() => {
+        if (user && user.email) {
+            fetchUserProfile(user.email);
+        }
+    }, [user]);
+
+    const fetchUserProfile = async (email) => {
+        try {
+            const response = await fetch(`https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/profile/${email}`);
+            if (!response.ok) {
+                throw new Error('Failed to fetch user profile');
+            }
+            const profileData = await response.json();
+            setUserProfile(profileData);
+        } catch (error) {
+            console.error('Error fetching user profile:', error);
+            // Handle error (e.g., set some error state or show a notification)
+        }
+    };
 
     const [markerData, setMarkerData] = useState({
         locationName: "",
@@ -204,7 +228,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             buildingName: markerData.locationName,
             category: markerData.category,  // This will always be "other"
             GID: markerData.place_id,
-            user_name: "markerData.user_id",    // This will always be "trial-user"
+            user_name: userProfile ? userProfile.user_name : "Anonymous User",
             address: markerData.address,
             latitude: parseFloat(markerData.lat),
             longitude: parseFloat(markerData.lng),
