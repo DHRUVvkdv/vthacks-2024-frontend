@@ -28,8 +28,8 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
 	return (
-		<html lang="en" style={{ fontFamily: "system-ui, sans, sans-serif" }}>
-			<body className={` ${openDyslexic.className}  antialiased`}>
+		<html lang="en">
+			<body className={`  antialiased`}>
 				<AuthProvider authUrl={process.env.NEXT_PUBLIC_AUTH_URL}>
 					<ThemeProvider
 						attribute="class"
