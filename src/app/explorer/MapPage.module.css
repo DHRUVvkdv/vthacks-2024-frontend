@@ -468,7 +468,7 @@
 
 .createButton {
   position: fixed;
-  bottom: 20px;
+  bottom: 30px;
   right: 20px;
   display: flex;
   align-items: center;
@@ -488,6 +488,7 @@
   justify-content: center;
   align-items: center;
   box-shadow: 0 2px 4px var(--shadow-color);
+  padding-bottom: 7px;
 }
 
 .createButton button:hover {
