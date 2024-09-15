@@ -9,7 +9,7 @@ export const routeList: RouteProps[] = [
 		label: "Home",
 	},
 	{
-		href: "/",
+		href: "/explorer",
 		label: "Explorer",
 	},
 	{

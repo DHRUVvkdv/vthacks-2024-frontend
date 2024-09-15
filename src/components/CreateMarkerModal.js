@@ -143,7 +143,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                 }));
 
                 // Check if the place already exists in existingMarkers
-                const exists = existingMarkers.some(marker => marker.placeId === place.place_id);
+                const exists = existingMarkers.some(marker => marker.placeId === place.GID);
                 setPlaceExists(exists);
             });
 
@@ -302,9 +302,9 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             sensory_considerations_text_aggregate: "",
             sensory_considerations_count: 0,
             overall_inclusivity_dict: {
-                "diverserepresentationinimagery/art": "",
-                "inclusivelanguageinsignageandmaterials": "",
-                "culturalsensitivitytrainingforstaff": ""
+                "Diverse Representation in Imagery/art": "",
+                "Inclusive Language in Signage and Materials": "",
+                "Cultural Sensitivity Training for Staff": ""
             },
             overall_inclusivity_rating: 0,
             overall_inclusivity_text_aggregate: "",
@@ -363,6 +363,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             setTimeout(() => {
                 onClose();
                 setSubmitSuccess(false);
+                window.location.reload();
             }, 2000);
         } catch (error) {
             console.error('Error:', error);
