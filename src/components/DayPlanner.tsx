@@ -31,7 +31,7 @@ const sendMessageToServer = async (message: string) => {
 };
 
 export default function AccessibilityTripPlanner() {
-	const { loading, user } = useUser();
+	const { user } = useUser();
 	const { redirectToLoginPage, redirectToSignupPage } = useRedirectFunctions();
 	const [query, setQuery] = useState<string>("");
 	const [messages, setMessages] = useState<Message[]>([]);
@@ -59,7 +59,7 @@ export default function AccessibilityTripPlanner() {
 			setIsListening(true);
 		};
 
-		recognition.onresult = (event) => {
+		recognition.onresult = (event: any) => {
 			const transcript = event.results[0][0].transcript;
 			setQuery((prev) => prev + " " + transcript);
 		};
@@ -141,8 +141,8 @@ export default function AccessibilityTripPlanner() {
 							Sorry, you need to create an account or log in to use the Day Planner.
 						</p>
 						<p className="text-lg ">
-							It's important we know your accessibility needs to provide an accurate
-							plan!
+							It&rsquo;s important we know your accessibility needs to provide an
+							accurate plan!
 						</p>
 					</CardContent>
 					<CardFooter className="flex flex-col sm:flex-row justify-center gap-4">
@@ -190,7 +190,7 @@ export default function AccessibilityTripPlanner() {
 										variant="ghost"
 									>
 										<Mic
-											className={` ${
+											className={` text-black dark:text-white ${
 												isListening ? "text-red-500" : "text-gray-500"
 											}`}
 										/>
