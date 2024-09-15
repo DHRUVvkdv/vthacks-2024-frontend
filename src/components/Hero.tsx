@@ -1,11 +1,12 @@
 import { Button } from "./ui/button";
 import { buttonVariants } from "./ui/button";
-import { HeroCards } from "./HeroCards";
+import HeroCards from "./HeroCards";
 import { GitHubLogoIcon } from "@radix-ui/react-icons";
 import { useRedirectFunctions } from "@propelauth/nextjs/client";
 import { redirect } from "next/navigation";
 import { useUser } from "@propelauth/nextjs/client";
 import Link from "next/link";
+import { Globe } from "./globe";
 
 export const Hero = () => {
 	const { redirectToSignupPage } = useRedirectFunctions();
@@ -74,7 +75,8 @@ export const Hero = () => {
 
 			{/* Hero cards sections */}
 			<div className="z-10">
-				<HeroCards />
+				{/* <HeroCards /> */}
+				<Globe />
 			</div>
 
 			{/* Shadow effect */}

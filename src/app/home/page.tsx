@@ -8,6 +8,7 @@ import { Newsletter } from "@/components/Newsletter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Team } from "@/components/Team";
 import "./landing.css";
+import { Globe } from "@/components/globe";
 
 const App = () => {
 	return (
@@ -15,6 +16,7 @@ const App = () => {
 			<Hero />
 			<About />
 			<Features />
+
 			<Team />
 			{/* <Newsletter /> */}
 			{/* <Footer /> */}
