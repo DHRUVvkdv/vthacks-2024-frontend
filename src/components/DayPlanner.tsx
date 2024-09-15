@@ -4,9 +4,16 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useUser } from "@propelauth/nextjs/client";
-import { Mic, Ear, EarOff } from "lucide-react";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardFooter,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { useUser, useRedirectFunctions } from "@propelauth/nextjs/client";
+import { Mic, Ear, EarOff, AlertCircle } from "lucide-react";
 
 interface Message {
 	role: "user" | "bot";
@@ -25,6 +32,7 @@ const sendMessageToServer = async (message: string) => {
 
 export default function AccessibilityTripPlanner() {
 	const { loading, user } = useUser();
+	const { redirectToLoginPage, redirectToSignupPage } = useRedirectFunctions();
 	const [query, setQuery] = useState<string>("");
 	const [messages, setMessages] = useState<Message[]>([]);
 	const [canSubmit, setCanSubmit] = useState<boolean>(true);
@@ -118,6 +126,43 @@ export default function AccessibilityTripPlanner() {
 		}
 	}, [query, generated]);
 
+	if (!user) {
+		return (
+			<div className="flex items-center justify-center min-h-screen  p-4">
+				<Card className="max-w-2xl w-full">
+					<CardHeader>
+						<CardTitle className="text-center">
+							<AlertCircle className="w-16 h-16 mx-auto mb-4 text-appAccentColor" />
+							<h1 className="text-3xl font-bold ">Access Restricted</h1>
+						</CardTitle>
+					</CardHeader>
+					<CardContent className="text-center space-y-4">
+						<p className="text-xl ">
+							Sorry, you need to create an account or log in to use the Day Planner.
+						</p>
+						<p className="text-lg ">
+							It's important we know your accessibility needs to provide an accurate
+							plan!
+						</p>
+					</CardContent>
+					<CardFooter className="flex flex-col sm:flex-row justify-center gap-4">
+						<Button
+							size="lg"
+							variant="default"
+							className="font-black"
+							onClick={() => redirectToSignupPage()}
+						>
+							Create Account
+						</Button>
+						<Button size="lg" variant="outline" onClick={() => redirectToLoginPage()}>
+							Log In
+						</Button>
+					</CardFooter>
+				</Card>
+			</div>
+		);
+	}
+
 	return (
 		<div className="md:min-h-screen p-6 md:p-12">
 			<Card className="w-full max-w-2xl mx-auto">
@@ -135,7 +180,8 @@ export default function AccessibilityTripPlanner() {
 										id="query"
 										value={query}
 										onChange={(e) => setQuery(e.target.value)}
-										placeholder="e.g., A day trip in New York City with wheelchair accessibility"
+										placeholder="e.g., A day trip in Blacksburg"
+										className="resize-none mt-3"
 									/>
 									<Button
 										type="button"
@@ -144,9 +190,9 @@ export default function AccessibilityTripPlanner() {
 										variant="ghost"
 									>
 										<Mic
-											className={
+											className={` ${
 												isListening ? "text-red-500" : "text-gray-500"
-											}
+											}`}
 										/>
 									</Button>
 								</div>
