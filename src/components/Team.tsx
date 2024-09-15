@@ -23,71 +23,50 @@ interface SociaNetworkslProps {
 
 const teamList: TeamProps[] = [
 	{
-		imageUrl: "https://i.pravatar.cc/150?img=35",
-		name: "Emma Smith",
-		position: "Product Manager",
+		imageUrl:
+			"https://media.licdn.com/dms/image/D4E03AQEtxbmkTWawBw/profile-displayphoto-shrink_200_200/0/1718212063544?e=2147483647&v=beta&t=zfTHOjMifK-_qmwP2IjkrhyeRQXVtN8XjAmB-dRxWXQ",
+		name: "Michael-Andre Odusami",
+		position: "",
 		socialNetworks: [
 			{
 				name: "Linkedin",
-				url: "https://www.linkedin.com/in/leopoldo-miranda/",
-			},
-			{
-				name: "Facebook",
-				url: "https://www.facebook.com/",
-			},
-			{
-				name: "Instagram",
-				url: "https://www.instagram.com/",
+				url: "https://www.linkedin.com/in/odusami03/",
 			},
 		],
 	},
 	{
-		imageUrl: "https://i.pravatar.cc/150?img=60",
-		name: "John Doe",
-		position: "Tech Lead",
+		imageUrl:
+			"https://media.licdn.com/dms/image/v2/D4E03AQHFfKH8ibmAeA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1694751959826?e=1732147200&v=beta&t=-G-H6O-Kn3Bxt28LB5LVswYyK-ExyUtnwYux3XdEtm8",
+		name: "Dhruv Varshney",
+		position: "",
 		socialNetworks: [
 			{
 				name: "Linkedin",
-				url: "https://www.linkedin.com/in/leopoldo-miranda/",
-			},
-			{
-				name: "Facebook",
-				url: "https://www.facebook.com/",
-			},
-			{
-				name: "Instagram",
-				url: "https://www.instagram.com/",
+				url: "https://www.linkedin.com/in/dhruvvarshneyvk/",
 			},
 		],
 	},
 	{
-		imageUrl: "https://i.pravatar.cc/150?img=36",
-		name: "Ashley Ross",
-		position: "Frontend Developer",
+		imageUrl:
+			"https://media.licdn.com/dms/image/v2/C5603AQFUQlHDeaSXyQ/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1654603923939?e=1732147200&v=beta&t=RV3YW73nE0VqJHZHcghAO2Zm7Ncqn1x0q7WDBBFXnLA",
+		name: "Aditya Singh",
+		position: "",
 		socialNetworks: [
 			{
 				name: "Linkedin",
-				url: "https://www.linkedin.com/in/leopoldo-miranda/",
-			},
-
-			{
-				name: "Instagram",
-				url: "https://www.instagram.com/",
+				url: "https://www.linkedin.com/in/singh-aditya23/",
 			},
 		],
 	},
 	{
-		imageUrl: "https://i.pravatar.cc/150?img=17",
-		name: "Bruce Rogers",
-		position: "Backend Developer",
+		imageUrl:
+			"https://media.licdn.com/dms/image/v2/D5603AQGUVgCxw8bPZA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1722503948777?e=1732147200&v=beta&t=WUMOd7c1XZm9kK4aIHrE1k3xegFDlfrwYkiby7Av1uU",
+		name: "Siddharth Rakshit",
+		position: "",
 		socialNetworks: [
 			{
 				name: "Linkedin",
-				url: "https://www.linkedin.com/in/leopoldo-miranda/",
-			},
-			{
-				name: "Facebook",
-				url: "https://www.facebook.com/",
+				url: "https://www.linkedin.com/in/siddharth-rakshit-04044b231//",
 			},
 		],
 	},
@@ -109,16 +88,15 @@ export const Team = () => {
 
 	return (
 		<section id="team" className="container py-24 sm:py-32">
-			<h2 className="text-3xl md:text-4xl font-bold">
+			<h2 className="text-3xl md:text-4xl font-bold text-center">
 				<span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-					Our Dedicated{" "}
+					THE{" "}
 				</span>
-				Crew
+				TEAM
 			</h2>
 
-			<p className="mt-4 mb-10 text-xl text-muted-foreground">
-				Lorem ipsum dolor sit amet consectetur, adipisicing elit. Veritatis dolor pariatur
-				sit!
+			<p className="mt-4 mb-10 text-xl text-muted-foreground text-center">
+				Take a look at who developed this amazing product!
 			</p>
 
 			<div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 gap-y-10">

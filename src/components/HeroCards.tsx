@@ -49,7 +49,7 @@ export const HeroCards = () => {
 					/>
 					<CardTitle className="text-center">Ted Mosby</CardTitle>
 					<CardDescription className="font-normal text-primary font-bold">
-						Travaler
+						Travelar
 					</CardDescription>
 				</CardHeader>
 
