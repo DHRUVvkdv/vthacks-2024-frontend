@@ -115,9 +115,9 @@ export const Team = () => {
 							<CardDescription className="text-primary">{position}</CardDescription>
 						</CardHeader>
 
-						<CardContent className="text-center pb-2">
+						{/* <CardContent className="text-center pb-2">
 							<p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
-						</CardContent>
+						</CardContent> */}
 
 						<CardFooter>
 							{socialNetworks.map(({ name, url }: SociaNetworkslProps) => (

@@ -11,27 +11,18 @@ export const About = () => {
 						<div className="pb-6">
 							<h2 className="text-3xl md:text-4xl font-bold">
 								<span className="bg-gradient-to-b from-primary/60 to-primary text-transparent bg-clip-text">
-									About{" "}
+									Who we{" "}
 								</span>
-								Us
+								are
 							</h2>
-							<p className="text-xl text-muted-foreground mt-4">
-								Mapability is on a mission to make travel accessible to everyone,
-								regardless of their abilities. We combine AI-powered trip planning
-								with a comprehensive Google Maps integration to create personalized,
-								accessibility-focused itineraries. Our platform showcases a wide
-								array of accessible locations, complete with detailed information on
-								mobility, cognitive, hearing, and vision accommodations. What sets
-								us apart is our community-driven approach – we empower users to
-								share their experiences through reviews, helping others make
-								informed decisions. With voice-enabled features and a commitment to
-								inclusivity, AccessiTrip is more than a travel planner; we're a
-								dedicated companion in your journey to explore the world confidently
-								and joyfully.
+							<p className="text-lg mt-4">
+								Mapability is dedicated to making travel accessible for all. Our
+								platform combines advanced AI technology with Google Maps
+								integration to deliver personalized, accessibility-focused
+								itineraries. Mapability empowers individuals to explore the world
+								with confidence and ease.
 							</p>
 						</div>
-
-						<Statistics />
 					</div>
 				</div>
 			</div>
