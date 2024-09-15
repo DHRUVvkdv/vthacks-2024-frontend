@@ -330,3 +330,11 @@ input:checked + .slider:before {
 	color: var(--text-color);
 	font-weight: 100;
 }
+
+.category_drop {
+	margin: 0;
+}
+
+.modalsearch {
+	margin-bottom: 0;
+}

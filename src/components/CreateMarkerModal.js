@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { useUser, useRedirectFunctions, useLogoutFunction } from "@propelauth/nextjs/client";
 
+const categories = [
+    "Entertainment",
+    "Establishment",
+    "Fitness",
+    "Housing",
+    "Restaurant",
+    "Other"
+  ];
+
 const accessibilitySections = [
     {
         name: "mobilityAccessibility",
@@ -125,7 +134,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
         lng: "",
         place_id: "",
         user_name: "trial-user",
-        category: "other",
+        category: "",
         ...initialAccessibilityState
     });
 
@@ -145,32 +154,40 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             });
             autocomplete.bindTo('bounds', googleMap);
             autocompleteRef.current = autocomplete;
-
+    
             autocomplete.addListener('place_changed', () => {
                 const place = autocomplete.getPlace();
                 if (!place.geometry) {
                     console.log("Returned place contains no geometry");
                     return;
                 }
-
+    
                 const newMarkerData = {
                     locationName: place.name,
                     address: place.formatted_address,
                     lat: place.geometry.location.lat(),
                     lng: place.geometry.location.lng(),
-                    place_id: place.place_id
+                    place_id: place.place_id,
+                    category: "" // Reset category initially
                 };
-
+    
+                // Check if the place already exists in existingMarkers
+                const existingMarker = existingMarkers.find(marker => marker.GID === place.place_id);
+                const exists = !!existingMarker;
+    
+                if (exists && existingMarker.category) {
+                    // If the place exists and has a category, use that category
+                    newMarkerData.category = existingMarker.category;
+                }
+    
                 setMarkerData(prev => ({
                     ...prev,
                     ...newMarkerData
                 }));
-
-                // Check if the place already exists in existingMarkers
-                const exists = existingMarkers.some(marker => marker.GID === place.place_id);
+    
                 setPlaceExists(exists);
             });
-
+    
             return () => {
                 if (autocompleteRef.current) {
                     window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
@@ -178,6 +195,13 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             };
         }
     }, [isOpen, googleMap, existingMarkers]);
+
+    const handleCategoryChange = (e) => {
+        setMarkerData(prev => ({
+            ...prev,
+            category: e.target.value
+        }));
+    };
 
     const handleChange = (e, section) => {
         const { name, value, type } = e.target;
@@ -259,7 +283,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
 
         return {
             buildingName: markerData.locationName,
-            category: "Other",
+            category: markerData.category,
             GID: markerData.place_id,
             address: markerData.address,
             latitude: parseFloat(markerData.lat),
@@ -414,135 +438,156 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
 
     if (!isOpen) return null;
 
+    console.log("Submit button conditions:", {
+        place_id: !!markerData.place_id,
+        category: !!markerData.category,
+        placeExists,
+        isSubmitting
+    });
+
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex justify-center items-center">
             <div className="relative p-8 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800 max-h-[80vh] flex flex-col">
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Add New Location</h3>
+                <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Add New Review</h3>
                 {submitSuccess ? (
                     <div className="text-green-600 text-center py-4">
                         Review submitted successfully!
                     </div>
                 ) : (
-                <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden">
-                    <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                            Search Location
-                        </label>
-                        <input
-                            ref={inputRef}
-                            type="text"
-                            placeholder="Search for a location"
-                            className="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                        />
-                    </div>
-                    {placeExists !== null && (
-                        <h3 className={`text-lg font-semibold ${placeExists ? 'text-red-500' : 'text-green-500'}`}>
-                            {placeExists ? 'This location already exists in our database.' : 'This is a new location!'}
-                        </h3>
-                    )}
-                    {markerData.place_id && (
-                        <div className="mb-4">
-                            <h4 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-                                {markerData.locationName}
-                            </h4>
-                            <p className="text-sm text-gray-600 dark:text-gray-400">{markerData.address}</p>
+                    <form onSubmit={handleSubmit} className="flex flex-col flex-grow overflow-hidden space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                Search Location
+                            </label>
+                            <input
+                                ref={inputRef}
+                                type="text"
+                                placeholder="Search for a location"
+                                className="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                            />
                         </div>
-                    )}
-                    <div className="flex-grow overflow-y-auto pr-4 -mr-4">
-                        {markerData.place_id && accessibilitySections.map((section) => (
-                            <div key={section.name} className="mb-4">
-                                <button
-                                    type="button"
-                                    onClick={() => toggleSection(section.name)}
-                                    className="flex items-center justify-between w-full py-2 text-left text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-orange-500"
-                                >
-                                    <span className="text-lg font-medium">{section.title}</span>
-                                    {expandedSections[section.name] ? <FaChevronUp /> : <FaChevronDown />}
-                                </button>
-                                {expandedSections[section.name] && (
-                                    <div className="mt-4 space-y-4">
-                                        <div className="mb-2">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Rating
-                                            </label>
-                                            <div className="flex items-center mt-1">
-                                                {[1, 2, 3, 4, 5].map((star) => (
-                                                    <FaStar
-                                                        key={star}
-                                                        className={`cursor-pointer ${
-                                                            star <= markerData[section.name].rating
-                                                                ? "text-orange-400"
-                                                                : "text-gray-300 dark:text-gray-600"
-                                                        }`}
-                                                        size={24}
-                                                        onClick={() => handleStarClick(section.name, star)}
-                                                    />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        {section.questions.map((question) => (
-                                            <div key={question} className="mb-2">
-                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                    {question}
-                                                </label>
-                                                <select
-                                                    name={question.toLowerCase().replace(/\s+/g, '')}
-                                                    value={markerData[section.name][question.toLowerCase().replace(/\s+/g, '')] === null ? '' : markerData[section.name][question.toLowerCase().replace(/\s+/g, '')].toString()}
-                                                    onChange={(e) => handleChange(e, section.name)}
-                                                    className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-                                                >
-                                                    <option value="">Select</option>
-                                                    <option value="true">Yes</option>
-                                                    <option value="false">No</option>
-                                                </select>
-                                            </div>
+    
+                        {markerData.place_id && (
+                            <div className="space-y-4">
+                                <div>
+                                    <select
+                                        id="category"
+                                        value={markerData.category}
+                                        onChange={handleCategoryChange}
+                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 sm:text-sm rounded-md shadow-sm"
+                                        required={placeExists === false}
+                                        disabled={placeExists === true}
+                                    >
+                                        <option value="">Select a category</option>
+                                        {categories.map((category) => (
+                                            <option key={category} value={category}>
+                                                {category}
+                                            </option>
                                         ))}
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                                                Additional Information
-                                            </label>
-                                            <textarea
-                                                name="additionalInfo"
-                                                value={markerData[section.name].additionalInfo}
-                                                onChange={(e) => handleChange(e, section.name)}
-                                                rows="3"
-                                                className="mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
-                                                placeholder={`Add any additional information about ${section.title.toLowerCase()} here`}
-                                            ></textarea>
-                                        </div>
-                                    </div>
-                                )}
+                                    </select>
+                                    {placeExists && (
+                                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 italic">Category is pre-set for existing locations.</p>
+                                    )}
+                                </div>
                             </div>
-                        ))}
-                    </div>
-                    {submitError && (
-                        <div className="text-red-600 text-center py-2">
-                            {submitError}
+                        )}
+    
+                        <div className="flex-grow overflow-y-auto pr-4 -mr-4">
+                            {markerData.place_id && accessibilitySections.map((section) => (
+                                <div key={section.name} className="mb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => toggleSection(section.name)}
+                                        className="flex items-center justify-between w-full py-2 text-left text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700 rounded-md px-4 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-100 focus:ring-orange-500"
+                                    >
+                                        <span className="text-lg font-medium">{section.title}</span>
+                                        {expandedSections[section.name] ? <FaChevronUp /> : <FaChevronDown />}
+                                    </button>
+                                    {expandedSections[section.name] && (
+                                        <div className="mt-4 space-y-4">
+                                            <div className="mb-2">
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Rating
+                                                </label>
+                                                <div className="flex items-center mt-1">
+                                                    {[1, 2, 3, 4, 5].map((star) => (
+                                                        <FaStar
+                                                            key={star}
+                                                            className={`cursor-pointer ${
+                                                                star <= markerData[section.name].rating
+                                                                    ? "text-orange-400"
+                                                                    : "text-gray-300 dark:text-gray-600"
+                                                            }`}
+                                                            size={24}
+                                                            onClick={() => handleStarClick(section.name, star)}
+                                                        />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            {section.questions.map((question) => (
+                                                <div key={question} className="mb-2">
+                                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                        {question}
+                                                    </label>
+                                                    <select
+                                                        name={question.toLowerCase().replace(/\s+/g, '')}
+                                                        value={markerData[section.name][question.toLowerCase().replace(/\s+/g, '')] === null ? '' : markerData[section.name][question.toLowerCase().replace(/\s+/g, '')].toString()}
+                                                        onChange={(e) => handleChange(e, section.name)}
+                                                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+                                                    >
+                                                        <option value="">Select</option>
+                                                        <option value="true">Yes</option>
+                                                        <option value="false">No</option>
+                                                    </select>
+                                                </div>
+                                            ))}
+                                            <div>
+                                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                                    Additional Information
+                                                </label>
+                                                <textarea
+                                                    name="additionalInfo"
+                                                    value={markerData[section.name].additionalInfo}
+                                                    onChange={(e) => handleChange(e, section.name)}
+                                                    rows="3"
+                                                    className="mt-1 block w-full sm:text-sm border border-gray-300 rounded-md"
+                                                    placeholder={`Add any additional information about ${section.title.toLowerCase()} here`}
+                                                ></textarea>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
                         </div>
-                    )}
-                    
-                    <div className="flex justify-end space-x-4 mt-6">
-                        <button
-                            type="button"
-                            onClick={() => { resetForm(); onClose(); }}
-                            className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500"
-                            disabled={isSubmitting}
-                        >
-                            Cancel
-                        </button>
-                        <button
-                            type="submit"
-                            disabled={!markerData.place_id || isSubmitting}
-                            className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                                markerData.place_id && !isSubmitting
-                                ? "bg-orange-500 hover:bg-orange-600" 
-                                : "bg-gray-400 cursor-not-allowed"
-                            }`}
-                        >
-                            {isSubmitting ? 'Submitting...' : 'Submit'}
-                        </button>
-                    </div>
-                </form>
+                        {submitError && (
+                            <div className="text-red-600 text-center py-2">
+                                {submitError}
+                            </div>
+                        )}
+                        
+                        <div className="flex justify-end space-x-4 mt-6">
+                            <button
+                                type="button"
+                                onClick={() => { resetForm(); onClose(); }}
+                                className="px-4 py-2 bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-200 text-base font-medium rounded-md shadow-sm hover:bg-gray-400 dark:hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-300 dark:focus:ring-gray-500"
+                                disabled={isSubmitting}
+                            >
+                                Cancel
+                            </button>
+                            
+                            <button
+                                type="submit"
+                                disabled={!markerData.place_id || (!placeExists && !markerData.category) || isSubmitting}
+                                className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${
+                                    markerData.place_id && (placeExists || markerData.category) && !isSubmitting
+                                    ? "bg-orange-500 hover:bg-orange-600" 
+                                    : "bg-gray-400 cursor-not-allowed"
+                                }`}
+                            >
+                                {isSubmitting ? 'Submitting...' : 'Submit'}
+                            </button>
+                        </div>
+                    </form>
                 )}
             </div>
         </div>

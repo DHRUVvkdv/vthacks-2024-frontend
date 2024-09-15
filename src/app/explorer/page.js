@@ -87,8 +87,8 @@ export default function MapPage() {
 
     const google = window.google;
     const map = new google.maps.Map(mapRef.current, {
-      center: { lat: 37.22954, lng: -80.41434 },
-      zoom: 13,
+      center: { lat: 37.224506981911354, lng: -80.41470036026607 },
+      zoom: 14,
       mapTypeId: "roadmap",
       styles: currentTheme === 'dark' ? darkModeStyles : lightModeStyles,
       disableDefaultUI: true,
