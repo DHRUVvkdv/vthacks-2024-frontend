@@ -23,7 +23,7 @@ export const metadata = {
 export default function RootLayout({ children }) {
 	return (
 		<html lang="en">
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+			<body className={` antialiased`}>
 				<AuthProvider authUrl={process.env.NEXT_PUBLIC_AUTH_URL}>
 					<ThemeProvider
 						attribute="class"
