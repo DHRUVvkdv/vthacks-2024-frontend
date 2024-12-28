@@ -39,8 +39,8 @@ export const configureAmplify = () => {
               domain: process.env.NEXT_PUBLIC_AUTH_DOMAIN,
               scopes: ['email', 'openid', 'profile'],
               responseType: 'code',
-              redirectSignIn: ['http://localhost:3000'],
-              redirectSignOut: ['http://localhost:3000']
+              redirectSignIn: ['http://localhost:3000', 'https://mapability.vercel.app'],
+              redirectSignOut: ['http://localhost:3000', 'https://mapability.vercel.app']
             }
           }
         }
