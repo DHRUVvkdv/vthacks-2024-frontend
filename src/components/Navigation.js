@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import Link from "next/link";
-import Settings from "./Settings";
+import Settings from "./settings";
 
 export default function Navigation() {
 	const [isMenuOpen, setIsMenuOpen] = useState(false);

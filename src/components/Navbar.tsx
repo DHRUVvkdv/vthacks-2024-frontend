@@ -11,7 +11,7 @@ import { LogOut, Menu, User } from "lucide-react";
 import { routeList, RouteProps } from "@/lib/commons";
 import Link from "next/link";
 import { ModeToggle } from "./mode-toggle";
-import Settings from "./Settings";
+import Settings from "./settings";
 import { Home, Compass, Calendar } from "lucide-react";
 import { useAuth } from '@/context/AuthContext';
 

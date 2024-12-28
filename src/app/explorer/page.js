@@ -7,7 +7,7 @@ import { lightModeStyles, darkModeStyles, ACCESSIBILITY_SUBCATEGORIES } from './
 import { ChevronDown, ChevronUp, Filter } from 'lucide-react';
 import styles from './MapPage.module.css';
 import CreateMarkerModal from "../../components/CreateMarkerModal";
-import StarRating from "../../components/StarRating"; 
+import StarRating from "../../components/starRating";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyDtUZDVbs6sO05Z9NKBj-zA4CnS1mVOKXQ";
 
@@ -144,7 +144,7 @@ export default function MapPage() {
 
   const updateMarkers = (markers, map) => {
     mapMarkersRef.forEach(marker => marker.setMap(null));
-   
+
     const newMapMarkers = markers.map((markerData) => {
       const position = new google.maps.LatLng(markerData.latitude, markerData.longitude);
       const mapMarker = new google.maps.Marker({
@@ -152,15 +152,15 @@ export default function MapPage() {
         map: map,
         title: markerData.buildingName
       });
-  
+
       mapMarker.addListener('click', () => {
         setSelectedMarker(markerData);
         setIsModalOpen(true);
       });
-  
+
       return mapMarker;
     });
-  
+
     setMapMarkersRef(newMapMarkers);
   };
 
@@ -168,7 +168,7 @@ export default function MapPage() {
     let result = mapMarkers;
 
     if (nameFilter) {
-      result = result.filter(marker => 
+      result = result.filter(marker =>
         marker.buildingName.toLowerCase().includes(nameFilter.toLowerCase())
       );
     }
@@ -182,7 +182,7 @@ export default function MapPage() {
     }
 
     if (selectedCategories.length > 0) {
-      result = result.filter(marker => 
+      result = result.filter(marker =>
         selectedCategories.includes(marker.category)
       );
     }
@@ -205,7 +205,7 @@ export default function MapPage() {
     });
 
     setFilteredMarkers(result);
- 
+
     // Update map markers when filters change
     if (googleMapRef.current) {
       updateMarkers(result, googleMapRef.current);
@@ -213,7 +213,7 @@ export default function MapPage() {
   }, [mapMarkers, nameFilter, wheelchairFilter, highFriendlinessFilter, sortBy, selectedCategories, advancedFilters]);
 
   const handleCategoryChange = (category) => {
-    setSelectedCategories(prevCategories => 
+    setSelectedCategories(prevCategories =>
       prevCategories.includes(category)
         ? prevCategories.filter(c => c !== category)
         : [...prevCategories, category]
@@ -250,7 +250,7 @@ export default function MapPage() {
         }));
       });
   };
-  
+
   const processAccessibilityData = (data) => {
     const processedData = {};
     Object.entries(data).forEach(([key, value]) => {
@@ -270,7 +270,7 @@ export default function MapPage() {
     });
     return processedData;
   };
-  
+
   const createNoDataAvailableObject = () => {
     const noDataObject = {};
     Object.keys(ACCESSIBILITY_SUBCATEGORIES).forEach(key => {
@@ -308,7 +308,7 @@ export default function MapPage() {
     });
     setIsModalOpen(true);
     fetchBuildingSummary(marker.GID);
-    
+
     const latLng = new google.maps.LatLng(marker.latitude, marker.longitude);
     googleMapRef.current.panTo(latLng);
     googleMapRef.current.setZoom(15);
@@ -451,15 +451,15 @@ export default function MapPage() {
             <h2 className={styles.modalHeading}>{selectedMarker.buildingName}</h2>
             <p><strong>Address:</strong> {selectedMarker.address}</p>
             <p><strong>Category:</strong> {selectedMarker.category}</p>
-            
+
             <h3>Accessibility Information:</h3>
             {Object.entries(ACCESSIBILITY_SUBCATEGORIES).map(([key, subcategories]) => {
               const summaryKey = key.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
               const summary = buildingSummary ? buildingSummary[summaryKey] : null;
-              
+
               return (
                 <div key={key} className={styles.accessibilitySection}>
-                  <button 
+                  <button
                     className={styles.sectionToggle}
                     onClick={() => toggleSection(key)}
                   >
@@ -486,8 +486,8 @@ export default function MapPage() {
                           <p>{summary}</p>
                         </div>
                       )}
-                      <button 
-                        onClick={() => toggleReviews(key)} 
+                      <button
+                        onClick={() => toggleReviews(key)}
                         className={styles.reviewToggle}
                       >
                         {reviewsVisible[key] ? "Hide reviews" : "Show all reviews"}
@@ -544,7 +544,7 @@ export default function MapPage() {
           onClose={handleCreateModalClose}
           onSubmit={handleCreateMarker}
           googleMap={googleMapRef.current}
-          existingMarkers={mapMarkers} 
+          existingMarkers={mapMarkers}
         />
       )}
     </>
