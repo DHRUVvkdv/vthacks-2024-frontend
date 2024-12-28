@@ -1,7 +1,5 @@
 'use client';
 
-import { useEffect } from 'react';
-import { configureAmplify } from '@/lib/auth-config';
 import "./globals.css";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";

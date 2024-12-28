@@ -1,8 +1,8 @@
 import React from "react";
 import Image from "next/image";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Users, Globe, Star } from "lucide-react";
+import { MapPin, Users, Globe } from "lucide-react";
 import gpslogo from "@/app/gpslogo.webp";
 
 export const About = () => {
@@ -65,43 +65,44 @@ export const About = () => {
 };
 
 // Add these styles to your global CSS file or a separate CSS module
-const styles = `
-@keyframes gradient {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
+// Commenting beacuse frontend never used it
+// const styles = `
+// @keyframes gradient {
+//   0% { background-position: 0% 50%; }
+//   50% { background-position: 100% 50%; }
+//   100% { background-position: 0% 50%; }
+// }
 
-.animate-gradient {
-  background-size: 200% 200%;
-  animation: gradient 3s ease infinite;
-}
+// .animate-gradient {
+//   background-size: 200% 200%;
+//   animation: gradient 3s ease infinite;
+// }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+// @keyframes fadeIn {
+//   from { opacity: 0; }
+//   to { opacity: 1; }
+// }
 
-.animate-fadeIn {
-  animation: fadeIn 1s ease-out;
-}
+// .animate-fadeIn {
+//   animation: fadeIn 1s ease-out;
+// }
 
-@keyframes fadeInUp {
-  from { 
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to { 
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+// @keyframes fadeInUp {
+//   from { 
+//     opacity: 0;
+//     transform: translateY(20px);
+//   }
+//   to { 
+//     opacity: 1;
+//     transform: translateY(0);
+//   }
+// }
 
-.animate-fadeInUp {
-  animation: fadeInUp 0.5s ease-out forwards;
-}
+// .animate-fadeInUp {
+//   animation: fadeInUp 0.5s ease-out forwards;
+// }
 
-.animation-delay-0 { animation-delay: 0s; }
-.animation-delay-1 { animation-delay: 0.2s; }
-.animation-delay-2 { animation-delay: 0.4s; }
-`;
+// .animation-delay-0 { animation-delay: 0s; }
+// .animation-delay-1 { animation-delay: 0.2s; }
+// .animation-delay-2 { animation-delay: 0.4s; }
+// `;

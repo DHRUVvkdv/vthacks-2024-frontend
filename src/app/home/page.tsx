@@ -2,13 +2,10 @@
 
 import { About } from "@/components/About";
 import { Features } from "@/components/Features";
-import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
-import { Newsletter } from "@/components/Newsletter";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { Team } from "@/components/Team";
 import "./landing.css";
-import { Globe } from "@/components/globe";
 
 const App = () => {
 	return (
