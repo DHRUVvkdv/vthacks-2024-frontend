@@ -1,14 +1,24 @@
-import { authMiddleware } from "@propelauth/nextjs/server/app-router";
+// src/middleware.ts
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export const middleware = authMiddleware;
+export async function middleware(request: NextRequest) {
+  // List of protected paths
+  const protectedPaths = ['/planner', '/profile'];
+  const path = request.nextUrl.pathname;
 
-// The middleware is responsible for keeping the user session up to date.
-// It should be called on every request that requires authentication AND /api/auth/.* routes.
+  // Check if the path is protected
+  if (protectedPaths.some(prefix => path.startsWith(prefix))) {
+    const authSession = request.cookies.get('amplify-authenticator-authState');
+    
+    if (!authSession) {
+      return NextResponse.redirect(new URL('/', request.url));
+    }
+  }
+
+  return NextResponse.next();
+}
+
 export const config = {
-	matcher: [
-		// REQUIRED: Match all request paths that start with /api/auth/
-		"/api/auth/(.*)",
-		// OPTIONAL: Don't match any static assets
-		"/((?!_next/static|_next/image|favicon.ico).*)",
-	],
+  matcher: ['/planner/:path*', '/profile/:path*'],
 };

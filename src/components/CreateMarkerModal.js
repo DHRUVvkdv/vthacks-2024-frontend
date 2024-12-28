@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FaStar, FaChevronDown, FaChevronUp } from "react-icons/fa";
-import { useUser, useRedirectFunctions, useLogoutFunction } from "@propelauth/nextjs/client";
+import { useAuth } from '@/context/AuthContext';
 
 const categories = [
     "Entertainment",
@@ -9,7 +9,7 @@ const categories = [
     "Housing",
     "Restaurant",
     "Other"
-  ];
+];
 
 const accessibilitySections = [
     {
@@ -104,14 +104,14 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
         return acc;
     }, {});
 
-    const { user } = useUser();
+    const { user, userAttributes } = useAuth();
     const [userProfile, setUserProfile] = useState(null);
 
     useEffect(() => {
-        if (user && user.email) {
-            fetchUserProfile(user.email);
+        if (userAttributes?.email) {
+            fetchUserProfile(userAttributes.email);
         }
-    }, [user]);
+    }, [userAttributes]);
 
     const fetchUserProfile = async (email) => {
         try {
@@ -123,7 +123,6 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             setUserProfile(profileData);
         } catch (error) {
             console.error('Error fetching user profile:', error);
-            // Handle error (e.g., set some error state or show a notification)
         }
     };
 
@@ -133,7 +132,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
         lat: "",
         lng: "",
         place_id: "",
-        user_name: "trial-user",
+        user_name: userProfile?.user_name || "Anonymous User",
         category: "",
         ...initialAccessibilityState
     });
@@ -154,14 +153,14 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
             });
             autocomplete.bindTo('bounds', googleMap);
             autocompleteRef.current = autocomplete;
-    
+
             autocomplete.addListener('place_changed', () => {
                 const place = autocomplete.getPlace();
                 if (!place.geometry) {
                     console.log("Returned place contains no geometry");
                     return;
                 }
-    
+
                 const newMarkerData = {
                     locationName: place.name,
                     address: place.formatted_address,
@@ -170,24 +169,24 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                     place_id: place.place_id,
                     category: "" // Reset category initially
                 };
-    
+
                 // Check if the place already exists in existingMarkers
                 const existingMarker = existingMarkers.find(marker => marker.GID === place.place_id);
                 const exists = !!existingMarker;
-    
+
                 if (exists && existingMarker.category) {
                     // If the place exists and has a category, use that category
                     newMarkerData.category = existingMarker.category;
                 }
-    
+
                 setMarkerData(prev => ({
                     ...prev,
                     ...newMarkerData
                 }));
-    
+
                 setPlaceExists(exists);
             });
-    
+
             return () => {
                 if (autocompleteRef.current) {
                     window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
@@ -250,26 +249,26 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
     const formatDataForSubmission = () => {
         const formattedData = {
             buildingName: markerData.locationName,
-            category: markerData.category,  // This will always be "other"
+            category: markerData.category,
             GID: markerData.place_id,
-            user_name: userProfile ? userProfile.user_name : "Anonymous User",
+            user_name: userProfile ? userProfile.user_name : (userAttributes?.username || "Anonymous User"),
             address: markerData.address,
             latitude: parseFloat(markerData.lat),
             longitude: parseFloat(markerData.lng),
         };
-      
+
         accessibilitySections.forEach(section => {
             const sectionName = section.name.replace(/([A-Z])/g, '_$1').toLowerCase();
             formattedData[`${sectionName}_dict`] = {};
             formattedData[`${sectionName}_rating`] = markerData[section.name].rating || 0;
             formattedData[`${sectionName}_text`] = markerData[section.name].additionalInfo || "";
-        
+
             section.questions.forEach(question => {
-              const key = question.toLowerCase().replace(/\s+/g, '');
-              formattedData[`${sectionName}_dict`][key] = markerData[section.name][key] === null ? "" : markerData[section.name][key].toString();
+                const key = question.toLowerCase().replace(/\s+/g, '');
+                formattedData[`${sectionName}_dict`][key] = markerData[section.name][key] === null ? "" : markerData[section.name][key].toString();
             });
         });
-      
+
         return formattedData;
     };
 
@@ -365,16 +364,16 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
         setIsSubmitting(true);
         setSubmitSuccess(false);
         setSubmitError(null);
-        
+
         const formattedReviewData = formatDataForSubmission();
         console.log("Submitting formatted review data:", JSON.stringify(formattedReviewData, null, 2));
-        
+
         try {
             if (!placeExists) {
                 // If the building doesn't exist, create it first
                 const buildingData = formatDataForBuildingCreation();
                 console.log("Creating new building:", JSON.stringify(buildingData, null, 2));
-    
+
                 const buildingResponse = await fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/buildings/create-building', {
                     method: 'POST',
                     headers: {
@@ -382,15 +381,15 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                     },
                     body: JSON.stringify(buildingData),
                 });
-    
+
                 if (!buildingResponse.ok) {
                     throw new Error('Failed to create building');
                 }
-    
+
                 const buildingResult = await buildingResponse.json();
                 console.log('Building created successfully:', buildingResult);
             }
-    
+
             // Now create the review
             const reviewResponse = await fetch('https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/review/create-review', {
                 method: 'POST',
@@ -399,14 +398,14 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                 },
                 body: JSON.stringify(formattedReviewData),
             });
-    
+
             if (!reviewResponse.ok) {
                 throw new Error('Failed to create review');
             }
-    
+
             const reviewResult = await reviewResponse.json();
             console.log('Review created successfully:', reviewResult);
-    
+
             // Update aggregation
             const updateAggregationResponse = await fetch(`https://rksm5pqdlaltlgj5pf6du4glwa0ahmao.lambda-url.us-east-1.on.aws/api/aggregations/update-aggregation/${formattedReviewData.GID}`, {
                 method: 'POST',
@@ -414,13 +413,13 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             if (!updateAggregationResponse.ok) {
                 throw new Error('Failed to update aggregation');
             }
-    
+
             console.log('Aggregation updated successfully');
-    
+
             setSubmitSuccess(true);
             onSubmit(formattedReviewData);
             setTimeout(() => {
@@ -466,7 +465,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                                 className="mt-1 p-2 w-full border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                             />
                         </div>
-    
+
                         {markerData.place_id && (
                             <div className="space-y-4">
                                 <div>
@@ -491,7 +490,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                                 </div>
                             </div>
                         )}
-    
+
                         <div className="flex-grow overflow-y-auto pr-4 -mr-4">
                             {markerData.place_id && accessibilitySections.map((section) => (
                                 <div key={section.name} className="mb-4">
@@ -513,11 +512,10 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                                                     {[1, 2, 3, 4, 5].map((star) => (
                                                         <FaStar
                                                             key={star}
-                                                            className={`cursor-pointer ${
-                                                                star <= markerData[section.name].rating
-                                                                    ? "text-orange-400"
-                                                                    : "text-gray-300 dark:text-gray-600"
-                                                            }`}
+                                                            className={`cursor-pointer ${star <= markerData[section.name].rating
+                                                                ? "text-orange-400"
+                                                                : "text-gray-300 dark:text-gray-600"
+                                                                }`}
                                                             size={24}
                                                             onClick={() => handleStarClick(section.name, star)}
                                                         />
@@ -564,7 +562,7 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                                 {submitError}
                             </div>
                         )}
-                        
+
                         <div className="flex justify-end space-x-4 mt-6">
                             <button
                                 type="button"
@@ -574,15 +572,14 @@ export default function CreateMarkerModal({ isOpen, onClose, onSubmit, googleMap
                             >
                                 Cancel
                             </button>
-                            
+
                             <button
                                 type="submit"
                                 disabled={!markerData.place_id || (!placeExists && !markerData.category) || isSubmitting}
-                                className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                                    markerData.place_id && (placeExists || markerData.category) && !isSubmitting
-                                    ? "bg-orange-500 hover:bg-orange-600" 
+                                className={`px-4 py-2 text-white text-base font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${markerData.place_id && (placeExists || markerData.category) && !isSubmitting
+                                    ? "bg-orange-500 hover:bg-orange-600"
                                     : "bg-gray-400 cursor-not-allowed"
-                                }`}
+                                    }`}
                             >
                                 {isSubmitting ? 'Submitting...' : 'Submit'}
                             </button>

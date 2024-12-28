@@ -1,7 +1,19 @@
 import axios from "axios";
 import { UserProfileFormData } from "./commons";
+import { getIdToken } from './auth-config';
+
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+
+const getAuthHeaders = async () => {
+	const token = await getIdToken();
+	return {
+	  headers: {
+		'Authorization': `Bearer ${token}`,
+		'Content-Type': 'application/json'
+	  }
+	};
+  };
 
 export const checkUserOnboarding = async (email: string) => {
 	try {
@@ -21,18 +33,19 @@ export const checkUserOnboarding = async (email: string) => {
  */
 export const getProfileByEmail = async (email: string) => {
 	try {
-		const response = await axios.get(
-			`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`
-		);
-		if (!response.data) {
-			return { exists: false, data: null };
-		} else {
-			return { exists: true, data: response.data };
-		}
+	  const headers = await getAuthHeaders();
+	  const response = await axios.get(
+		`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`,
+		headers
+	  );
+	  if (!response.data) {
+		return { exists: false, data: null };
+	  }
+	  return { exists: true, data: response.data };
 	} catch (error) {
-		throw error;
+	  throw error;
 	}
-};
+  };
 
 /**
  * Updates a pre-existing user profile in the database
