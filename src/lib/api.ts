@@ -35,13 +35,18 @@ const getAuthHeaders = () => {
  * @param email to find the user by
  * @returns
  */
-export const getProfileByEmail = async (email: string) => {
+export const getProfileByEmail = async (email: string, authToken?: string) => {
 	try {
-	  const headers = await getAuthHeaders();
+	  const headers = {
+		'Authorization': authToken ? `Bearer ${authToken}` : '',
+		'Content-Type': 'application/json'
+	  };
+  
 	  const response = await axios.get(
 		`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`,
-		headers
+		{ headers }
 	  );
+	  
 	  if (!response.data) {
 		return { exists: false, data: null };
 	  }
@@ -55,47 +60,52 @@ export const getProfileByEmail = async (email: string) => {
  * Updates a pre-existing user profile in the database
  * @param formData
  */
-export const updateUserProfile = async (formData: UserProfileFormData) => {
+export const updateUserProfile = async (formData: UserProfileFormData, authToken?: string) => {
 	try {
-		const dataToSend = { ...formData, age: formData.age ? parseInt(formData.age, 10) : 0 };
-		const response = await axios.post(
-			`${API_BASE_URL}/api/profile/update-profile`,
-			dataToSend,
-			{ headers: { "Content-Type": "application/json" } }
-		);
-		return response.data;
+	  const headers = {
+		'Authorization': authToken ? `Bearer ${authToken}` : '',
+		'Content-Type': 'application/json'
+	  };
+  
+	  const dataToSend = { ...formData, age: formData.age ? parseInt(formData.age, 10) : 0 };
+	  const response = await axios.post(
+		`${API_BASE_URL}/api/profile/update-profile`,
+		dataToSend,
+		{ headers }
+	  );
+	  return response.data;
 	} catch (error) {
-		throw error;
+	  throw error;
 	}
-};
+  };
 
 /**
  * Creates a pre-existing user profile in the database
  * @param formData
  */
-export const createUserProfile = async (formData: UserProfileFormData) => {
-	console.log(formData);
+export const createUserProfile = async (formData: UserProfileFormData, authToken?: string) => {
 	try {
-		const dataToSend = {
-			...formData,
-			age: formData.age ? parseInt(formData.age, 10) : 0,
-		};
-
-		const response = await axios.post(
-			`${API_BASE_URL}/api/profile/create-profile`,
-			dataToSend,
-			{
-				headers: {
-					"Content-Type": "application/json",
-				},
-			}
-		);
-
-		return response.data;
+	  const headers = {
+		'Authorization': authToken ? `Bearer ${authToken}` : '',
+		'Content-Type': 'application/json'
+	  };
+  
+	  const dataToSend = {
+		...formData,
+		age: formData.age ? parseInt(formData.age, 10) : 0,
+	  };
+  
+	  const response = await axios.post(
+		`${API_BASE_URL}/api/profile/create-profile`,
+		dataToSend,
+		{ headers }
+	  );
+  
+	  return response.data;
 	} catch (error) {
-		throw error;
+	  throw error;
 	}
-};
+  };
 export const giveGPTPromptToBackend = async (email: string, prompt: string) => {
 	console.log(email, prompt);
 	try {
