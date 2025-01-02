@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/Navbar";
 import { AuthProvider as CustomAuthProvider } from '@/context/AuthContext';
 import { AuthProvider } from "react-oidc-context";
+import { Analytics } from "@vercel/analytics/react";
 import { Suspense } from "react";
 import { User } from 'oidc-client-ts';
 
@@ -70,6 +71,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </ThemeProvider>
           </CustomAuthProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );
