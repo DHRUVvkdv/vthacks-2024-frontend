@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { useState } from 'react';
+import { useRef } from 'react';
 
 function Loading() {
   return (
@@ -44,51 +45,26 @@ function UnauthorizedState({ onLogin }: { onLogin: () => void }) {
 function PlannerContent() {
   const { isAuthenticated, loading, signIn } = useAuth();
   const router = useRouter();
-  const [error, setError] = useState<Error | null>(null);
-
-  console.log('Planner Page State:', { isAuthenticated, loading });  
+  const hasAttemptedRedirect = useRef(false);
 
   useEffect(() => {
-    console.log('Auth Effect Running:', { isAuthenticated, loading }); 
-    try {
-      if (!loading && !isAuthenticated) {
-        console.log('Redirecting to home - not authenticated');
-        router.push('/home?redirect=/planner');
-        window.location.href = '/home?redirect=/planner';
-        // router.refresh();
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('An error occurred'));
+    if (!loading && !isAuthenticated && !hasAttemptedRedirect.current) {
+      hasAttemptedRedirect.current = true;
+      router.push('/home?redirect=/planner');
     }
   }, [isAuthenticated, loading, router]);
 
-  if (error) {
-    return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <Card>
-          <CardContent className="text-center p-6">
-            <h2 className="text-xl font-semibold mb-4">Something went wrong</h2>
-            <p className="text-red-500 mb-4">{error.message}</p>
-            <Button onClick={() => {
-              setError(null);
-              router.push('/home');
-            }}>
-              Return Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
+  // If still loading, show loading state
   if (loading) {
     return <Loading />;
   }
 
+  // If not authenticated, show unauthorized state
   if (!isAuthenticated) {
     return <UnauthorizedState onLogin={signIn} />;
   }
 
+  // If authenticated, show planner
   return (
     <>
       <DayPlanner />

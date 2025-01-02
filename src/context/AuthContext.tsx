@@ -33,12 +33,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleAuthStateChange = async () => {
       if (!oidcAuth.isLoading) {
-        console.log('Auth state changed:', {
-          isAuthenticated: oidcAuth.isAuthenticated,
-          hasUser: !!oidcAuth.user,
-          hasError: !!oidcAuth.error
-        });
-
         if (oidcAuth.error) {
           console.error('Auth error:', oidcAuth.error);
           clearAuthCookie();
@@ -47,8 +41,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (oidcAuth.isAuthenticated && oidcAuth.user?.access_token) {
-          console.log('Setting auth cookie');
+          // Set the auth cookie and wait a moment to ensure it's set
           setAuthCookie(oidcAuth.user.access_token);
+          await new Promise(resolve => setTimeout(resolve, 500));
           
           // Check for redirect after login
           const redirectPath = sessionStorage.getItem('postLoginRedirect');
@@ -63,7 +58,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     handleAuthStateChange();
-  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user, router]);
+  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user]);
+
 
   console.log('Auth Provider State:', {  
     isAuthenticated: oidcAuth.isAuthenticated,
@@ -88,6 +84,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (oidcAuth.user) {
         await oidcAuth.removeUser();
       }
+      // Add a small delay before redirect
+      await new Promise(resolve => setTimeout(resolve, 100));
       router.push('/home');
     } catch (error) {
       console.error('Sign out error:', error);
