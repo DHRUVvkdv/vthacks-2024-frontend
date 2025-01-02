@@ -1,30 +1,34 @@
 import axios from "axios";
 import { UserProfileFormData } from "./commons";
-import { getIdToken } from './auth-config';
+import { useAuth } from "react-oidc-context";
+
 
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
-const getAuthHeaders = async () => {
-	const token = await getIdToken();
+const getAuthHeaders = () => {
+	const auth = useAuth();
 	return {
 	  headers: {
-		'Authorization': `Bearer ${token}`,
+		'Authorization': `Bearer ${auth.user?.access_token}`,
 		'Content-Type': 'application/json'
 	  }
 	};
   };
 
-export const checkUserOnboarding = async (email: string) => {
+  export const checkUserOnboarding = async (email: string) => {
 	try {
-		const response = await axios.get(
-			`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`
-		);
-		return { exists: true, data: response.data };
+	  const headers = getAuthHeaders();
+	  const response = await axios.get(
+		`${API_BASE_URL}/api/profile/${encodeURIComponent(email)}`,
+		headers
+	  );
+	  return { exists: true, data: response.data };
 	} catch (error) {
-		return { exists: false, data: null };
+	  return { exists: false, data: null };
 	}
-};
+  };
+  
 
 /**
  * Gets the user profile based on the unique email identifier for the user

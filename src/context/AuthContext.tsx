@@ -1,13 +1,10 @@
-'use client';
-
 import { createContext, useContext, useEffect, useState } from 'react';
-import { getCurrentUser, signOut as amplifySignOut, signInWithRedirect, fetchUserAttributes } from '@aws-amplify/auth';
-import type { AuthUser, FetchUserAttributesOutput } from '@aws-amplify/auth';
+import { useAuth as useOidcAuth } from 'react-oidc-context';
 
 interface AuthContextType {
   isAuthenticated: boolean;
-  user: AuthUser | null;
-  userAttributes: FetchUserAttributesOutput | null;
+  user: any;
+  userAttributes: any;
   loading: boolean;
   signIn: () => Promise<void>;
   signOut: () => Promise<void>;
@@ -15,65 +12,42 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN; 
+const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID; 
+const logoutUri = "http://localhost:3000"; 
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [user, setUser] = useState<AuthUser | null>(null);
-  const [userAttributes, setUserAttributes] = useState<FetchUserAttributesOutput | null>(null);
+  const oidcAuth = useOidcAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    checkUser();
-  }, []);
-
-  async function checkUser() {
-    try {
-      const currentUser = await getCurrentUser();
-      const attributes = await fetchUserAttributes();
-      setIsAuthenticated(true);
-      setUser(currentUser);
-      setUserAttributes(attributes);
-    } catch (error) {
-      setIsAuthenticated(false);
-      setUser(null);
-      setUserAttributes(null);
-    } finally {
+    if (!oidcAuth.isLoading) {
       setLoading(false);
     }
-  }
+  }, [oidcAuth.isLoading]);
 
-async function signIn() {
-  try {
-    console.log('Starting sign in process...');
-    await signInWithRedirect();
-    console.log('Sign in redirect completed');
-  } catch (error) {
-    console.error('Sign in error:', error);
-    if (error instanceof Error) {
-      console.error({
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-    }
-    throw error;
-  }
-}
-
-  async function signOut() {
+  const signIn = async () => {
     try {
-      await amplifySignOut();
-      setIsAuthenticated(false);
-      setUser(null);
-      setUserAttributes(null);
+      await oidcAuth.signinRedirect();
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    }
+  };
+
+  const signOut = async () => {
+    try {
+      // Use Cognito's logout endpoint
+      window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
     } catch (error) {
       console.error('Error signing out:', error);
     }
-  }
+  };
 
   const value = {
-    isAuthenticated,
-    user,
-    userAttributes,
+    isAuthenticated: oidcAuth.isAuthenticated,
+    user: oidcAuth.user,
+    userAttributes: oidcAuth.user?.profile,
     loading,
     signIn,
     signOut,

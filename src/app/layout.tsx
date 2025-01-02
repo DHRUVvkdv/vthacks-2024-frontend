@@ -4,9 +4,8 @@ import "./globals.css";
 import localFont from "next/font/local";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/Navbar";
-import { AuthProvider } from '@/context/AuthContext'; // Updated import to use our Amplify AuthProvider
-import { AmplifyConfigurer } from '@/components/AmplifyConfigurer';
-
+import { AuthProvider as CustomAuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from "react-oidc-context";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,21 +25,30 @@ const openDyslexic = localFont({
   weight: "100 900",
 });
 
+const oidcConfig = {
+  authority: process.env.NEXT_PUBLIC_COGNITO_AUTHORITY,
+  client_id: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
+  redirect_uri: "http://localhost:3000/",
+  response_type: "code",
+  scope: "email openid",
+};
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body className={`antialiased ${geistSans.variable} ${geistMono.variable} ${openDyslexic.variable}`}>
-        <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="system"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <AmplifyConfigurer />
-            <Navbar />
-            {children}
-          </ThemeProvider>
+        <AuthProvider {...oidcConfig}>
+          <CustomAuthProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Navbar />
+              {children}
+            </ThemeProvider>
+          </CustomAuthProvider>
         </AuthProvider>
       </body>
     </html>
