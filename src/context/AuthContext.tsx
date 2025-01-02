@@ -41,13 +41,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  async function signIn() {
-    try {
-      await signInWithRedirect();
-    } catch (error) {
-      console.error('Error signing in:', error);
+async function signIn() {
+  try {
+    console.log('Starting sign in process...');
+    await signInWithRedirect();
+    console.log('Sign in redirect completed');
+  } catch (error) {
+    console.error('Sign in error:', error);
+    if (error instanceof Error) {
+      console.error({
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
     }
+    throw error;
   }
+}
 
   async function signOut() {
     try {
