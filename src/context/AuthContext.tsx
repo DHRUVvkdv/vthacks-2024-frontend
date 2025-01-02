@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth as useOidcAuth } from 'react-oidc-context';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -17,7 +17,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcAuth = useOidcAuth();
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-  const searchParams = useSearchParams();
 
   useEffect(() => {
     const handleAuthStateChange = async () => {
@@ -34,28 +33,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           return;
         }
 
-        if (oidcAuth.isAuthenticated && oidcAuth.user) {
-          // Handle redirect if present
-          const redirectPath = searchParams.get('redirect');
-          if (redirectPath) {
-            router.push(redirectPath);
-          }
-        }
-
         setLoading(false);
       }
     };
 
     handleAuthStateChange();
-  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user, router, searchParams]);
+  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user]);
 
   const signIn = async () => {
     try {
-      // Simpler sign-in without storage manipulation
-      const redirectPath = searchParams.get('redirect');
-      if (redirectPath) {
-        sessionStorage.setItem('postLoginRedirect', redirectPath);
-      }
+      const currentPath = typeof window !== 'undefined' ? window.location.pathname : '/';
+      sessionStorage.setItem('postLoginRedirect', currentPath);
       await oidcAuth.signinRedirect();
     } catch (error) {
       console.error('Sign in error:', error);
