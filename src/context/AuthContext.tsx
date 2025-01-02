@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth as useOidcAuth } from 'react-oidc-context';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -12,32 +13,49 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const COGNITO_DOMAIN = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
-const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
-const REDIRECT_URI = typeof window !== 'undefined' 
-  ? window.location.origin 
-  : process.env.NEXT_PUBLIC_REDIRECT_URI || "http://localhost:3000";
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcAuth = useOidcAuth();
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Log environment variables on mount (excluding sensitive data)
-    console.log('Auth Configuration:', {
-      hasDomain: !!COGNITO_DOMAIN,
-      hasClientId: !!CLIENT_ID,
-      redirectUri: REDIRECT_URI
-    });
+    const handleAuthStateChange = async () => {
+      console.log('Auth State:', {
+        isAuthenticated: oidcAuth.isAuthenticated,
+        isLoading: oidcAuth.isLoading,
+        user: oidcAuth.user,
+      });
 
-    if (!oidcAuth.isLoading) {
-      setLoading(false);
-    }
-  }, [oidcAuth.isLoading]);
+      if (!oidcAuth.isLoading) {
+        if (oidcAuth.error) {
+          console.error('Auth error:', oidcAuth.error);
+          setLoading(false);
+          return;
+        }
+
+        if (oidcAuth.isAuthenticated && oidcAuth.user) {
+          // Handle redirect if present
+          const redirectPath = searchParams.get('redirect');
+          if (redirectPath) {
+            router.push(redirectPath);
+          }
+        }
+
+        setLoading(false);
+      }
+    };
+
+    handleAuthStateChange();
+  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user, router, searchParams]);
 
   const signIn = async () => {
     try {
-      console.log('Initiating sign in...');
+      // Simpler sign-in without storage manipulation
+      const redirectPath = searchParams.get('redirect');
+      if (redirectPath) {
+        sessionStorage.setItem('postLoginRedirect', redirectPath);
+      }
       await oidcAuth.signinRedirect();
     } catch (error) {
       console.error('Sign in error:', error);
@@ -45,43 +63,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-const signOut = async () => {
-  try {
-    console.log('Starting sign out process...');
-    
-    if (!COGNITO_DOMAIN || !CLIENT_ID) {
-      throw new Error('Missing Cognito configuration');
-    }
-
-    const baseUrl = `https://${COGNITO_DOMAIN}`;
-    const logoutUrl = new URL('/logout', baseUrl);
-    
-    // Use the current origin for logout_uri
-    const currentOrigin = typeof window !== 'undefined' ? window.location.origin : REDIRECT_URI;
-    
-    logoutUrl.searchParams.append('client_id', CLIENT_ID);
-    logoutUrl.searchParams.append('logout_uri', currentOrigin);
-
-    if (oidcAuth.removeUser) {
-      await oidcAuth.removeUser();
-    }
-
-    window.location.href = logoutUrl.toString();
-  } catch (error) {
-    console.error('Error during sign out:', error);
-      // Fallback to basic signout if Cognito logout fails
-      try {
-        console.log('Attempting fallback signout...');
+  const signOut = async () => {
+    try {
+      // Clear auth cookie
+      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+      
+      if (oidcAuth.user) {
         await oidcAuth.removeUser();
-        window.location.href = REDIRECT_URI;
-      } catch (fallbackError) {
-        console.error('Fallback signout also failed:', fallbackError);
       }
+      router.push('/home');
+    } catch (error) {
+      console.error('Sign out error:', error);
+      router.push('/home');
     }
   };
 
   const value = {
-    isAuthenticated: oidcAuth.isAuthenticated,
+    isAuthenticated: !!oidcAuth.user && oidcAuth.isAuthenticated,
     user: oidcAuth.user,
     userAttributes: oidcAuth.user?.profile,
     loading,
@@ -91,7 +89,7 @@ const signOut = async () => {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

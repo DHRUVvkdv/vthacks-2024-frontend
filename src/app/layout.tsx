@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Navbar } from "@/components/Navbar";
 import { AuthProvider as CustomAuthProvider } from '@/context/AuthContext';
 import { AuthProvider } from "react-oidc-context";
+import { User } from 'oidc-client-ts';
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,7 +31,17 @@ const oidcConfig = {
   client_id: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
   redirect_uri: typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_REDIRECT_URI,
   response_type: "code",
-  scope: "email openid",
+  scope: "openid email",
+  loadUserInfo: true,
+  
+  // Updated onSigninCallback with proper typing
+  onSigninCallback: (user: User | void) => {
+    if (user && 'access_token' in user) {
+      const maxAge = 3600 * 8; // 8 hours
+      document.cookie = `auth-token=${user.access_token}; path=/; max-age=${maxAge}; SameSite=Lax`;
+    }
+    window.history.replaceState({}, document.title, window.location.pathname);
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
