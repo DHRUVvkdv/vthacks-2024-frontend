@@ -13,6 +13,17 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+function setAuthCookie(token: string) {
+  const secure = process.env.NODE_ENV === 'production';
+  const maxAge = 3600 * 8; // 8 hours
+  document.cookie = `auth-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${secure ? '; Secure' : ''}`;
+}
+
+function clearAuthCookie() {
+  document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+  document.cookie = 'oidc.user:*=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcAuth = useOidcAuth();
   const [loading, setLoading] = useState(true);
@@ -20,17 +31,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleAuthStateChange = async () => {
-      console.log('Auth State:', {
-        isAuthenticated: oidcAuth.isAuthenticated,
-        isLoading: oidcAuth.isLoading,
-        user: oidcAuth.user,
-      });
-
       if (!oidcAuth.isLoading) {
         if (oidcAuth.error) {
           console.error('Auth error:', oidcAuth.error);
+          clearAuthCookie();
           setLoading(false);
           return;
+        }
+
+        if (oidcAuth.isAuthenticated && oidcAuth.user?.access_token) {
+          // Set the auth cookie whenever we have a valid token
+          setAuthCookie(oidcAuth.user.access_token);
         }
 
         setLoading(false);
@@ -53,9 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Clear auth cookie
-      document.cookie = 'auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT';
-      
+      clearAuthCookie();
       if (oidcAuth.user) {
         await oidcAuth.removeUser();
       }

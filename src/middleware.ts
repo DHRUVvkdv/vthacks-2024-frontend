@@ -13,11 +13,17 @@ export async function middleware(request: NextRequest) {
 
   // Check if the path is protected
   if (protectedPaths.some(prefix => path.startsWith(prefix))) {
-    // Check for auth token cookie
-    const authToken = request.cookies.get('auth-token');
+    // Check for any auth-related cookies
+    const authCookies = request.cookies.getAll().filter(cookie => 
+      cookie.name.startsWith('oidc.') || 
+      cookie.name === 'auth-token' ||
+      cookie.name.includes('cognito')
+    );
+
+    console.log('Auth cookies found:', authCookies.map(c => c.name));
     
-    if (!authToken?.value) {
-      console.log('No auth token found, redirecting to home');
+    if (authCookies.length === 0) {
+      console.log('No auth cookies found, redirecting to home');
       const url = new URL('/home', request.url);
       url.searchParams.set('redirect', path);
       return NextResponse.redirect(url);
