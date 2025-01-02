@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  const protectedPaths = ['/planner', '/profile'];
+  const protectedPaths = ['/profile'];
   const path = request.nextUrl.pathname;
 
   // Skip middleware for auth callback URLs
@@ -36,7 +36,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/planner/:path*',
     '/profile/:path*'
   ]
 };

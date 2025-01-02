@@ -3,12 +3,13 @@
 import { Suspense } from 'react';
 import DayPlanner from "@/components/DayPlanner";
 import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation'; 
 import { useState } from 'react';
 import { useRef } from 'react';
+import { AlertCircle } from 'lucide-react';
 
 function Loading() {
   return (
@@ -47,10 +48,11 @@ function PlannerContent() {
   const router = useRouter();
   const hasAttemptedRedirect = useRef(false);
 
+  // Remove the redirect attempt since we want to show the UI message instead
   useEffect(() => {
     if (!loading && !isAuthenticated && !hasAttemptedRedirect.current) {
       hasAttemptedRedirect.current = true;
-      router.push('/home?redirect=/planner');
+      // Don't redirect, let the UI handle it
     }
   }, [isAuthenticated, loading, router]);
 
@@ -61,7 +63,36 @@ function PlannerContent() {
 
   // If not authenticated, show unauthorized state
   if (!isAuthenticated) {
-    return <UnauthorizedState onLogin={signIn} />;
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Card className="max-w-2xl w-full">
+          <CardHeader>
+            <CardTitle className="text-center">
+              <AlertCircle className="w-16 h-16 mx-auto mb-4 text-appAccentColor" />
+              <h1 className="text-3xl font-bold">Access Required</h1>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center space-y-4">
+            <p className="text-xl">
+              Please log in to use the Day Planner.
+            </p>
+            <p className="text-lg">
+              It's important we know your accessibility needs to provide an accurate plan!
+            </p>
+          </CardContent>
+          <CardFooter className="flex flex-col sm:flex-row justify-center gap-4">
+            <Button
+              size="lg"
+              variant="default"
+              className="font-black"
+              onClick={() => signIn()}
+            >
+              Log In
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+    );
   }
 
   // If authenticated, show planner

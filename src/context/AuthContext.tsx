@@ -84,9 +84,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (oidcAuth.user) {
         await oidcAuth.removeUser();
       }
-      // Add a small delay before redirect
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Force redirect to home
       router.push('/home');
+      // Add a small delay to ensure state cleanup
+      await new Promise(resolve => setTimeout(resolve, 100));
     } catch (error) {
       console.error('Sign out error:', error);
       router.push('/home');
