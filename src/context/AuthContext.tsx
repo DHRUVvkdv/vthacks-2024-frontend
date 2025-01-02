@@ -12,15 +12,22 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const cognitoDomain = process.env.NEXT_PUBLIC_COGNITO_DOMAIN; 
-const clientId = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID; 
-const logoutUri = "http://localhost:3000"; 
+const COGNITO_DOMAIN = process.env.NEXT_PUBLIC_COGNITO_DOMAIN;
+const CLIENT_ID = process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID;
+const REDIRECT_URI = process.env.NEXT_PUBLIC_REDIRECT_URI || "http://localhost:3000";
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const oidcAuth = useOidcAuth();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Log environment variables on mount (excluding sensitive data)
+    console.log('Auth Configuration:', {
+      hasDomain: !!COGNITO_DOMAIN,
+      hasClientId: !!CLIENT_ID,
+      redirectUri: REDIRECT_URI
+    });
+
     if (!oidcAuth.isLoading) {
       setLoading(false);
     }
@@ -28,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signIn = async () => {
     try {
+      console.log('Initiating sign in...');
       await oidcAuth.signinRedirect();
     } catch (error) {
       console.error('Sign in error:', error);
@@ -37,10 +45,45 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = async () => {
     try {
-      // Use Cognito's logout endpoint
-      window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(logoutUri)}`;
+      console.log('Starting sign out process...');
+      
+      if (!COGNITO_DOMAIN) {
+        throw new Error('Missing Cognito domain configuration');
+      }
+      
+      if (!CLIENT_ID) {
+        throw new Error('Missing Client ID configuration');
+      }
+
+      // Construct the full logout URL
+      const baseUrl = `https://${COGNITO_DOMAIN}`;
+      const logoutUrl = new URL('/logout', baseUrl);
+      
+      // Add query parameters
+      logoutUrl.searchParams.append('client_id', CLIENT_ID);
+      logoutUrl.searchParams.append('logout_uri', REDIRECT_URI);
+
+      console.log('Constructed logout URL:', logoutUrl.toString());
+
+      // First clear any local auth state
+      if (oidcAuth.removeUser) {
+        console.log('Removing user data...');
+        await oidcAuth.removeUser();
+      }
+
+      // Then redirect to Cognito logout
+      console.log('Redirecting to Cognito logout...');
+      window.location.href = logoutUrl.toString();
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Error during sign out:', error);
+      // Fallback to basic signout if Cognito logout fails
+      try {
+        console.log('Attempting fallback signout...');
+        await oidcAuth.removeUser();
+        window.location.href = REDIRECT_URI;
+      } catch (fallbackError) {
+        console.error('Fallback signout also failed:', fallbackError);
+      }
     }
   };
 
