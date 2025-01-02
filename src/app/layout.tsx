@@ -28,7 +28,7 @@ const openDyslexic = localFont({
 const oidcConfig = {
   authority: process.env.NEXT_PUBLIC_COGNITO_AUTHORITY,
   client_id: process.env.NEXT_PUBLIC_COGNITO_CLIENT_ID,
-  redirect_uri: "http://localhost:3000/",
+  redirect_uri: typeof window !== 'undefined' ? window.location.origin : process.env.NEXT_PUBLIC_REDIRECT_URI,
   response_type: "code",
   scope: "email openid",
 };
