@@ -54,7 +54,8 @@ function PlannerContent() {
       if (!loading && !isAuthenticated) {
         console.log('Redirecting to home - not authenticated');
         router.push('/home?redirect=/planner');
-        router.refresh();
+        window.location.href = '/home?redirect=/planner';
+        // router.refresh();
       }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('An error occurred'));
