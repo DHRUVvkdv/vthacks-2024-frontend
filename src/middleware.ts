@@ -5,6 +5,8 @@ export async function middleware(request: NextRequest) {
   const protectedPaths = ['/planner', '/profile'];
   const path = request.nextUrl.pathname;
 
+  console.log('Middleware running for path:', path);
+
   // Skip middleware for auth callback URLs
   if (request.nextUrl.searchParams.has('code') || 
       request.nextUrl.searchParams.has('error')) {

@@ -33,6 +33,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleAuthStateChange = async () => {
       if (!oidcAuth.isLoading) {
+        console.log('Auth state changed:', {
+          isAuthenticated: oidcAuth.isAuthenticated,
+          hasUser: !!oidcAuth.user,
+          hasError: !!oidcAuth.error
+        });
+
         if (oidcAuth.error) {
           console.error('Auth error:', oidcAuth.error);
           clearAuthCookie();
@@ -41,6 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (oidcAuth.isAuthenticated && oidcAuth.user?.access_token) {
+          console.log('Setting auth cookie');
           setAuthCookie(oidcAuth.user.access_token);
           
           // Check for redirect after login
@@ -57,6 +64,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     handleAuthStateChange();
   }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user, router]);
+
+  console.log('Auth Provider State:', {  
+    isAuthenticated: oidcAuth.isAuthenticated,
+    loading,
+    hasUser: !!oidcAuth.user
+  });
 
   const signIn = async () => {
     try {

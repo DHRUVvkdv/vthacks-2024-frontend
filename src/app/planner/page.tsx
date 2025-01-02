@@ -46,9 +46,13 @@ function PlannerContent() {
   const router = useRouter();
   const [error, setError] = useState<Error | null>(null);
 
+  console.log('Planner Page State:', { isAuthenticated, loading });  
+
   useEffect(() => {
+    console.log('Auth Effect Running:', { isAuthenticated, loading }); 
     try {
       if (!loading && !isAuthenticated) {
+        console.log('Redirecting to home - not authenticated');
         router.push('/home?redirect=/planner');
       }
     } catch (err) {
