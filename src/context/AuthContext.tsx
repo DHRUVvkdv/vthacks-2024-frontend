@@ -15,8 +15,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 function setAuthCookie(token: string) {
   const secure = process.env.NODE_ENV === 'production';
+  const sameSite = process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax';
   const maxAge = 3600 * 8; // 8 hours
-  document.cookie = `auth-token=${token}; path=/; max-age=${maxAge}; SameSite=Lax${secure ? '; Secure' : ''}`;
+  document.cookie = `auth-token=${token}; path=/; max-age=${maxAge}; SameSite=${sameSite}${secure ? '; Secure' : ''}`;
 }
 
 function clearAuthCookie() {
@@ -40,8 +41,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         if (oidcAuth.isAuthenticated && oidcAuth.user?.access_token) {
-          // Set the auth cookie whenever we have a valid token
           setAuthCookie(oidcAuth.user.access_token);
+          
+          // Check for redirect after login
+          const redirectPath = sessionStorage.getItem('postLoginRedirect');
+          if (redirectPath) {
+            sessionStorage.removeItem('postLoginRedirect');
+            router.push(redirectPath);
+          }
         }
 
         setLoading(false);
@@ -49,7 +56,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     handleAuthStateChange();
-  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user]);
+  }, [oidcAuth.isLoading, oidcAuth.isAuthenticated, oidcAuth.error, oidcAuth.user, router]);
 
   const signIn = async () => {
     try {

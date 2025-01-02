@@ -13,7 +13,7 @@ export async function middleware(request: NextRequest) {
 
   // Check if the path is protected
   if (protectedPaths.some(prefix => path.startsWith(prefix))) {
-    // Check for any auth-related cookies
+    // Get all possible auth cookies
     const authCookies = request.cookies.getAll().filter(cookie => 
       cookie.name.startsWith('oidc.') || 
       cookie.name === 'auth-token' ||
@@ -22,12 +22,24 @@ export async function middleware(request: NextRequest) {
 
     console.log('Auth cookies found:', authCookies.map(c => c.name));
     
-    if (authCookies.length === 0) {
+    const authToken = request.cookies.get('auth-token');
+    
+    if (!authToken || authCookies.length === 0) {
       console.log('No auth cookies found, redirecting to home');
       const url = new URL('/home', request.url);
       url.searchParams.set('redirect', path);
       return NextResponse.redirect(url);
     }
+
+    // Add auth token to headers for backend requests
+    const requestHeaders = new Headers(request.headers);
+    requestHeaders.set('Authorization', `Bearer ${authToken.value}`);
+
+    return NextResponse.next({
+      request: {
+        headers: requestHeaders,
+      },
+    });
   }
 
   return NextResponse.next();
